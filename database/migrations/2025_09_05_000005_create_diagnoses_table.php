@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('diagnoses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('consultation_id')->constrained('consultations')->onDelete('cascade');
-            $table->enum('diagnosis_name', ['Myalgia', 'Arthralgia', 'HA-TMD', 'Joint-related TMD']);
+            $table->string('name');
             $table->boolean('is_confirmed')->default(true);
             $table->timestamps();
         });

@@ -15,6 +15,15 @@ class Consultation extends Model
         'notes',
     ];
 
+    protected $dates = [
+        'consultation_date',
+    ];
+
+    public function getConsultationDateAttribute($value)
+    {
+        return \Carbon\Carbon::parse($value);
+    }
+
     public function patient()
     {
         return $this->belongsTo(Patient::class);

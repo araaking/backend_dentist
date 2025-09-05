@@ -21,6 +21,6 @@ Route::middleware('auth')->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::resource('consultations', ConsultationController::class)->only(['index', 'create']);
+    Route::resource('consultations', ConsultationController::class)->only(['index', 'create', 'store', 'show']);
     Route::resource('patients', PatientController::class)->only(['edit', 'update']);
 });
