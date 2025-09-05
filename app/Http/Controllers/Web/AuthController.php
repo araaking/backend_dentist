@@ -22,6 +22,9 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+            'date_of_birth' => 'required|date',
+            'gender' => 'required|in:Male,Female',
+            'phone_number' => 'required|string|max:15',
         ]);
 
         $user = User::create([
@@ -31,6 +34,9 @@ class AuthController extends Controller
 
         Patient::create([
             'name' => $request->name,
+            'date_of_birth' => $request->date_of_birth,
+            'gender' => $request->gender,
+            'phone_number' => $request->phone_number,
             'user_id' => $user->id,
         ]);
 

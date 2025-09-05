@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthController;
 
+use App\Http\Controllers\Web\PatientController;
+use App\Http\Controllers\Web\ConsultationController;
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -17,4 +20,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::resource('consultations', ConsultationController::class)->only(['index', 'create']);
+    Route::resource('patients', PatientController::class)->only(['edit', 'update']);
 });

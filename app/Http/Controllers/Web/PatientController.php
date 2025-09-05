@@ -50,8 +50,7 @@ class PatientController extends Controller
         if ($patient->user_id !== Auth::id()) {
             abort(403);
         }
-        $consultations = $patient->consultations;
-        return view('patients.show', compact('patient', 'consultations'));
+        return view('patients.show', compact('patient'));
     }
 
     public function edit(Patient $patient)
@@ -75,9 +74,9 @@ class PatientController extends Controller
             'phone_number' => 'nullable|string|max:15',
         ]);
 
-        $patient->update($request->only(['name', 'date_of_birth', 'gender', 'phone_number']));
+        $patient->update($request->all());
 
-        return redirect()->route('patients.show', $patient);
+        return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
     }
 
     public function destroy(Patient $patient)
