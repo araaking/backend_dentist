@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-8">Formulir Self Diagnosis TMD</h1>
 
-    <form action="{{ route('consultations.store') }}" method="POST" class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    <form action="{{ route('consultations.store') }}" method="POST" enctype="multipart/form-data" class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
         @csrf
 
         <h2 class="text-2xl font-semibold mb-6 border-b pb-2">Pertanyaan Subjektif (SQ)</h2>
@@ -101,38 +101,74 @@
 
         {{-- E1 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $eq_questions['E1'] }}</label>
-            <div class="grid grid-cols-3 gap-4">
-                <div><input type="checkbox" name="eq[E1][Temporalis]" value="1" class="mr-2"> Temporalis</div>
-                <div><input type="checkbox" name="eq[E1][Masseter]" value="1" class="mr-2"> Masseter</div>
-                <div><input type="checkbox" name="eq[E1][TMJ]" value="1" class="mr-2"> Sendi TMJ</div>
+            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Ringan</label>
+            <p class="text-sm text-gray-600 mb-4">Tekan ringan area berikut dengan jari Anda. Pilih tingkat nyeri yang Anda rasakan:</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="e1_temporalis" class="block text-sm font-medium text-gray-600">Pelipis (Temporalis)</label>
+                    <select name="eq[E1][Temporalis]" id="e1_temporalis" class="w-full mt-1 px-3 py-2 border rounded-lg">
+                        <option value="0">0 - Tidak Nyeri</option>
+                        <option value="1">1 - Nyeri Ringan</option>
+                        <option value="2">2 - Nyeri Sedang</option>
+                        <option value="3">3 - Nyeri Berat</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="e1_masseter" class="block text-sm font-medium text-gray-600">Pipis (Masseter)</label>
+                    <select name="eq[E1][Masseter]" id="e1_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
+                        <option value="0">0 - Tidak Nyeri</option>
+                        <option value="1">1 - Nyeri Ringan</option>
+                        <option value="2">2 - Nyeri Sedang</option>
+                        <option value="3">3 - Nyeri Berat</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="e1_tmj" class="block text-sm font-medium text-gray-600">Sendi Rahang (TMJ)</label>
+                    <select name="eq[E1][TMJ]" id="e1_tmj" class="w-full mt-1 px-3 py-2 border rounded-lg">
+                        <option value="0">0 - Tidak Nyeri</option>
+                        <option value="1">1 - Nyeri Ringan</option>
+                        <option value="2">2 - Nyeri Sedang</option>
+                        <option value="3">3 - Nyeri Berat</option>
+                    </select>
+                </div>
             </div>
         </div>
 
         {{-- E2 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2" for="e2_opening">{{ $eq_questions['E2'] }}</label>
-            <input type="number" name="eq[E2]" id="e2_opening" class="w-full px-3 py-2 border rounded-lg" placeholder="Contoh: 40" required>
-            <p class="text-sm text-gray-500 mt-1">Ukur bukaan mulut maksimal Anda dalam milimeter (mm).</p>
+            <label class="block text-gray-700 font-bold mb-2">Pengukuran Bukaan Mulut Maksimal</label>
+            <div class="space-y-4">
+                <div>
+                    <input type="number" name="eq[E2][opening_mm]" id="e2_opening" class="w-full px-3 py-2 border rounded-lg" placeholder="Contoh: 40" required>
+                    <p class="text-sm text-gray-500 mt-1">Buka mulut Anda selebar mungkin dan ukur jarak antara gigi atas dan bawah dalam milimeter (mm).</p>
+                </div>
+                <div>
+                    <label for="e2_photo" class="block text-sm font-medium text-gray-600 mb-2">Upload Foto Mulut Terbuka</label>
+                    <input type="file" name="e2_photo" id="e2_photo" accept="image/*" class="w-full px-3 py-2 border rounded-lg">
+                    <p class="text-sm text-gray-500 mt-1">Upload foto selfie mulut Anda yang terbuka maksimal (opsional, tapi direkomendasikan untuk diagnosis yang lebih akurat).</p>
+                </div>
+            </div>
         </div>
 
         {{-- E3 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $eq_questions['E3'] }}</label>
+            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Bunyi Sendi Rahang</label>
+            <p class="text-sm text-gray-600 mb-4">Buka dan tutup mulut Anda beberapa kali. Dengarkan apakah ada bunyi klik atau bunyi kasar:</p>
             <select name="eq[E3]" class="w-full px-3 py-2 border rounded-lg">
                 <option value="Tidak ada">Tidak ada bunyi</option>
-                <option value="Klik tunggal">Klik tunggal</option>
-                <option value="Klik ganda">Klik ganda</option>
-                <option value="Krepitasi kasar">Krepitasi kasar</option>
+                <option value="Klik tunggal">Ada bunyi klik sekali</option>
+                <option value="Klik ganda">Ada bunyi klik berulang</option>
+                <option value="Krepitasi kasar">Ada bunyi kasar seperti pasir</option>
             </select>
         </div>
 
         {{-- E4 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $eq_questions['E4'] }}</label>
+            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Lebih Dalam</label>
+            <p class="text-sm text-gray-600 mb-4">Tekan lebih dalam pada area berikut. Beri nilai nyeri yang Anda rasakan:</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="e4_temporalis" class="block text-sm font-medium text-gray-600">Temporalis</label>
+                    <label for="e4_temporalis" class="block text-sm font-medium text-gray-600">Pelipis (Temporalis)</label>
                     <select name="eq[E4][Temporalis]" id="e4_temporalis" class="w-full mt-1 px-3 py-2 border rounded-lg">
                         <option value="0">0 - Tidak Nyeri</option>
                         <option value="1">1 - Nyeri Ringan</option>
@@ -141,7 +177,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="e4_masseter" class="block text-sm font-medium text-gray-600">Masseter</label>
+                    <label for="e4_masseter" class="block text-sm font-medium text-gray-600">Pipis (Masseter)</label>
                     <select name="eq[E4][Masseter]" id="e4_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
                         <option value="0">0 - Tidak Nyeri</option>
                         <option value="1">1 - Nyeri Ringan</option>
@@ -150,7 +186,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="e4_tmj" class="block text-sm font-medium text-gray-600">Sendi TMJ</label>
+                    <label for="e4_tmj" class="block text-sm font-medium text-gray-600">Sendi Rahang (TMJ)</label>
                     <select name="eq[E4][TMJ]" id="e4_tmj" class="w-full mt-1 px-3 py-2 border rounded-lg">
                         <option value="0">0 - Tidak Nyeri</option>
                         <option value="1">1 - Nyeri Ringan</option>

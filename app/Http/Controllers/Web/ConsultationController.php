@@ -30,10 +30,10 @@ class ConsultationController extends Controller
     ];
 
     private $eq_questions = [
-        'E1' => 'Nyeri tekan ringan (Temporalis, Masseter, TMJ). Pilih area yang nyeri.',
-        'E2' => 'Gerakan membuka mulut (maksimal, dalam mm).',
-        'E3' => 'Bunyi sendi saat membuka & menutup mulut. (Jawaban: Tidak ada, Klik tunggal, Klik ganda, Krepitasi kasar)',
-        'E4' => 'Palpasi nyeri otot & sendi (skor 0-3). Beri skor untuk Temporalis, Masseter, dan Sendi TMJ.',
+        'E1' => 'Pemeriksaan Nyeri Tekan Ringan',
+        'E2' => 'Pengukuran Bukaan Mulut Maksimal',
+        'E3' => 'Pemeriksaan Bunyi Sendi Rahang',
+        'E4' => 'Pemeriksaan Nyeri Tekan Lebih Dalam',
     ];
 
     /**
@@ -64,11 +64,18 @@ class ConsultationController extends Controller
         $request->validate([
             'sq' => 'required|array',
             'eq' => 'required|array',
+            'e2_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $sq_answers = $request->input('sq');
         $eq_answers = $request->input('eq');
         $diagnoses = [];
+
+        // Handle photo upload for E2
+        $photoPath = null;
+        if ($request->hasFile('e2_photo')) {
+            $photoPath = $request->file('e2_photo')->store('consultation_photos', 'public');
+        }
 
         // Myalgia Diagnosis
         if (
@@ -76,7 +83,12 @@ class ConsultationController extends Controller
             ($sq_answers['SQ2'] ?? '< 1 minggu') === '>= 1 minggu' &&
             ($sq_answers['SQ3'] ?? 'Tidak') === 'Ya' &&
             ($sq_answers['SQ4'] ?? 'Tidak') === 'Ya' &&
-            (isset($eq_answers['E1']['Temporalis']) || isset($eq_answers['E1']['Masseter']) || ($eq_answers['E4']['Temporalis'] ?? 0) >= 1 || ($eq_answers['E4']['Masseter'] ?? 0) >= 1)
+            (
+                ($eq_answers['E1']['Temporalis'] ?? 0) >= 1 ||
+                ($eq_answers['E1']['Masseter'] ?? 0) >= 1 ||
+                ($eq_answers['E4']['Temporalis'] ?? 0) >= 1 ||
+                ($eq_answers['E4']['Masseter'] ?? 0) >= 1
+            )
         ) {
             $diagnoses[] = 'Myalgia';
         }
@@ -85,7 +97,10 @@ class ConsultationController extends Controller
         if (
             ($sq_answers['SQ1'] ?? 'Tidak') === 'Ya' &&
             ($sq_answers['SQ4'] ?? 'Tidak') === 'Ya' &&
-            (isset($eq_answers['E1']['TMJ']) || ($eq_answers['E4']['TMJ'] ?? 0) >= 1)
+            (
+                ($eq_answers['E1']['TMJ'] ?? 0) >= 1 ||
+                ($eq_answers['E4']['TMJ'] ?? 0) >= 1
+            )
         ) {
             $diagnoses[] = 'Arthralgia';
         }
@@ -99,29 +114,33 @@ class ConsultationController extends Controller
             $diagnoses[] = 'Headache attributed to TMD (HA-TMD)';
         }
 
-        // Joint-related TMD
+        // Joint-related TMD - Lebih spesifik berdasarkan kriteria
         $isJointRelated = false;
-        if (
-            ($sq_answers['SQ8'] ?? 'Tidak ada') !== 'Tidak ada' ||
-            ($sq_answers['SQ9'] ?? 'Tidak') === 'Ya' ||
-            ($sq_answers['SQ10'] ?? 'Tidak') === 'Ya' ||
-            ($sq_answers['SQ11'] ?? 'Tidak') === 'Ya' ||
-            ($sq_answers['SQ12'] ?? 'Tidak') === 'Ya' ||
-            ($eq_answers['E2'] ?? 40) <= 35 ||
-            ($sq_answers['SQ13'] ?? 'Tidak') === 'Ya' ||
-            ($sq_answers['SQ14'] ?? 'Tidak') === 'Ya' ||
-            ($eq_answers['E3'] ?? 'Tidak ada') === 'Krepitasi kasar'
-        ) {
-             $isJointRelated = true;
+        $jointSymptoms = 0;
+
+        // Hitung gejala sendi yang ada
+        if (($sq_answers['SQ8'] ?? 'Tidak ada') !== 'Tidak ada') $jointSymptoms++;
+        if (($sq_answers['SQ9'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($sq_answers['SQ10'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($sq_answers['SQ11'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($sq_answers['SQ12'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($eq_answers['E2']['opening_mm'] ?? 40) <= 35) $jointSymptoms++;
+        if (($sq_answers['SQ13'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($sq_answers['SQ14'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+        if (($eq_answers['E3'] ?? 'Tidak ada') === 'Krepitasi kasar') $jointSymptoms++;
+
+        // Joint-related TMD hanya jika ada minimal 2 gejala sendi
+        if ($jointSymptoms >= 2) {
+            $isJointRelated = true;
         }
-        
+
         if ($isJointRelated) {
             $diagnoses[] = 'Joint-related TMD';
         }
 
 
         $consultation = null;
-        DB::transaction(function () use ($request, $diagnoses, &$consultation) {
+        DB::transaction(function () use ($request, $diagnoses, $photoPath, &$consultation) {
             $patient = Auth::user()->patient;
             $consultation = $patient->consultations()->create([
                 'consultation_date' => now(),
@@ -136,11 +155,24 @@ class ConsultationController extends Controller
                 ]);
             }
             foreach ($request->input('eq') as $key => $value) {
-                 $consultation->answers()->create([
-                    'question_code' => $key,
-                    'answer' => is_array($value) ? json_encode($value) : $value,
-                    'type' => 'EQ'
-                ]);
+                if ($key === 'E2') {
+                    // Special handling for E2 with photo
+                    $e2Data = [
+                        'opening_mm' => $value['opening_mm'] ?? null,
+                        'photo_path' => $photoPath
+                    ];
+                    $consultation->answers()->create([
+                        'question_code' => $key,
+                        'answer' => json_encode($e2Data),
+                        'type' => 'EQ'
+                    ]);
+                } else {
+                    $consultation->answers()->create([
+                        'question_code' => $key,
+                        'answer' => is_array($value) ? json_encode($value) : $value,
+                        'type' => 'EQ'
+                    ]);
+                }
             }
 
             // Save all diagnoses
@@ -153,7 +185,11 @@ class ConsultationController extends Controller
             }
         });
 
-        return redirect()->route('consultations.show', $consultation->id);
+        if ($consultation) {
+            return redirect()->route('consultations.show', $consultation->id);
+        } else {
+            return redirect()->route('dashboard')->with('error', 'Terjadi kesalahan saat menyimpan diagnosis.');
+        }
     }
 
     /**
