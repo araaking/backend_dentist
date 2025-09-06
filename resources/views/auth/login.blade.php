@@ -17,5 +17,6 @@
         </div>
         <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg">Login</button>
     </form>
+    <p class="mt-4 text-center">Belum punya akun? <a href="{{ route('register') }}" class="text-blue-500">Daftar dulu</a></p>
 </div>
 @endsection
