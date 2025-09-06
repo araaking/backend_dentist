@@ -5,9 +5,13 @@ use App\Http\Controllers\Web\AuthController;
 
 use App\Http\Controllers\Web\PatientController;
 use App\Http\Controllers\Web\ConsultationController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
 });
 
 Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');

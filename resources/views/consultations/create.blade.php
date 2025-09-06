@@ -143,9 +143,24 @@
                     <p class="text-sm text-gray-500 mt-1">Buka mulut Anda selebar mungkin dan ukur jarak antara gigi atas dan bawah dalam milimeter (mm).</p>
                 </div>
                 <div>
-                    <label for="e2_photo" class="block text-sm font-medium text-gray-600 mb-2">Upload Foto Mulut Terbuka</label>
-                    <input type="file" name="e2_photo" id="e2_photo" accept="image/*" class="w-full px-3 py-2 border rounded-lg">
-                    <p class="text-sm text-gray-500 mt-1">Upload foto selfie mulut Anda yang terbuka maksimal (opsional, tapi direkomendasikan untuk diagnosis yang lebih akurat).</p>
+                    <label for="e2_photo" class="block text-sm font-medium text-gray-600 mb-2">Ambil Foto Selfie Mulut Terbuka</label>
+                    <div class="mt-2 p-4 border rounded-lg bg-gray-50">
+                        <div class="flex justify-center">
+                            <video id="video" width="320" height="240" autoplay class="border rounded-lg bg-black"></video>
+                        </div>
+                        <div class="flex justify-center mt-4">
+                             <button id="start-camera" type="button" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition font-bold mr-2">Mulai Kamera</button>
+                            <button id="snap" type="button" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition font-bold" disabled>Ambil Foto</button>
+                        </div>
+                        <canvas id="canvas" width="320" height="240" class="hidden"></canvas>
+                        <input type="hidden" name="e2_photo" id="e2_photo">
+                        <div id="photo-preview-container" class="mt-4 text-center" style="display: none;">
+                            <p class="text-sm font-medium text-gray-600 mb-2">Hasil Foto:</p>
+                            <img id="photo-preview" class="border rounded-lg inline-block" />
+                            <button id="retake-photo" type="button" class="mt-2 text-sm text-blue-500 hover:underline">Ulangi</button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Posisikan wajah Anda di depan kamera dan klik "Ambil Foto".</p>
                 </div>
             </div>
         </div>
@@ -203,3 +218,58 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const startCameraButton = document.getElementById('start-camera');
+    const snapButton = document.getElementById('snap');
+    const retakeButton = document.getElementById('retake-photo');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoPreviewContainer = document.getElementById('photo-preview-container');
+    const hiddenInput = document.getElementById('e2_photo');
+    const context = canvas.getContext('2d');
+    let stream;
+
+    startCameraButton.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            snapButton.disabled = false;
+            startCameraButton.style.display = 'none';
+            photoPreviewContainer.style.display = 'none';
+            video.play();
+        } catch (err) {
+            console.error("Error accessing camera: ", err);
+            alert("Tidak dapat mengakses kamera. Pastikan Anda memberikan izin.");
+        }
+    });
+
+    snapButton.addEventListener('click', () => {
+        context.drawImage(video, 0, 0, 320, 240);
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        
+        photoPreview.src = dataUrl;
+        photoPreviewContainer.style.display = 'block';
+        hiddenInput.value = dataUrl;
+
+        // Stop video stream and hide video element
+        stream.getTracks().forEach(track => track.stop());
+        video.style.display = 'none';
+        snapButton.style.display = 'none';
+        startCameraButton.style.display = 'block'; // Show start camera button again to retake
+        startCameraButton.textContent = 'Ambil Ulang';
+    });
+
+    retakeButton.addEventListener('click', () => {
+        hiddenInput.value = '';
+        photoPreviewContainer.style.display = 'none';
+        snapButton.style.display = 'block';
+        startCameraButton.click(); // Re-start the camera flow
+    });
+});
+</script>
+@endpush

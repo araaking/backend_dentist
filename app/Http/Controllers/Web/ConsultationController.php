@@ -64,17 +64,24 @@ class ConsultationController extends Controller
         $request->validate([
             'sq' => 'required|array',
             'eq' => 'required|array',
-            'e2_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'e2_photo' => 'nullable|string', // Now expecting a base64 string
         ]);
 
         $sq_answers = $request->input('sq');
         $eq_answers = $request->input('eq');
         $diagnoses = [];
 
-        // Handle photo upload for E2
+        // Handle photo from base64 for E2
         $photoPath = null;
-        if ($request->hasFile('e2_photo')) {
-            $photoPath = $request->file('e2_photo')->store('consultation_photos', 'public');
+        if ($request->filled('e2_photo')) {
+            $imageData = $request->input('e2_photo');
+            // Remove the data URL scheme and get the raw base64 data
+            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
+            $imageData = base64_decode($imageData);
+            
+            $filename = 'consultation_photos/' . uniqid() . '.jpg';
+            \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $imageData);
+            $photoPath = $filename;
         }
 
         // Myalgia Diagnosis
