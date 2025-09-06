@@ -204,10 +204,11 @@ class ConsultationController extends Controller
      */
     public function show(Consultation $consultation)
     {
-        // Ensure the user is authorized to see this consultation
-        if ($consultation->patient->user_id !== Auth::id()) {
+        // Pastikan pengguna hanya dapat melihat konsultasi mereka sendiri
+        if (Auth::user()->patient->id !== $consultation->patient_id) {
             abort(403);
         }
+
         return view('consultations.show', compact('consultation'));
     }
 }
