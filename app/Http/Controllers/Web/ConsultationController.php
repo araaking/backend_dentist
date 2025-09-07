@@ -101,7 +101,7 @@ class ConsultationController extends Controller
         }
 
         // Arthralgia Diagnosis
-        if (
+        if (empty($diagnoses) &&
             ($sq_answers['SQ1'] ?? 'Tidak') === 'Ya' &&
             ($sq_answers['SQ4'] ?? 'Tidak') === 'Ya' &&
             (
@@ -113,7 +113,7 @@ class ConsultationController extends Controller
         }
 
         // HA-TMD Diagnosis
-        if (
+        if (empty($diagnoses) &&
             ($sq_answers['SQ5'] ?? 'Tidak') === 'Ya' &&
             ($sq_answers['SQ6'] ?? '< 1x/minggu') === '>= 1x/minggu' &&
             ($sq_answers['SQ7'] ?? 'Tidak') === 'Ya'
@@ -122,27 +122,29 @@ class ConsultationController extends Controller
         }
 
         // Joint-related TMD - Lebih spesifik berdasarkan kriteria
-        $isJointRelated = false;
-        $jointSymptoms = 0;
+        if (empty($diagnoses)) {
+            $isJointRelated = false;
+            $jointSymptoms = 0;
 
-        // Hitung gejala sendi yang ada
-        if (($sq_answers['SQ8'] ?? 'Tidak ada') !== 'Tidak ada') $jointSymptoms++;
-        if (($sq_answers['SQ9'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($sq_answers['SQ10'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($sq_answers['SQ11'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($sq_answers['SQ12'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($eq_answers['E2']['opening_mm'] ?? 40) <= 35) $jointSymptoms++;
-        if (($sq_answers['SQ13'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($sq_answers['SQ14'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
-        if (($eq_answers['E3'] ?? 'Tidak ada') === 'Krepitasi kasar') $jointSymptoms++;
+            // Hitung gejala sendi yang ada
+            if (($sq_answers['SQ8'] ?? 'Tidak ada') !== 'Tidak ada') $jointSymptoms++;
+            if (($sq_answers['SQ9'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($sq_answers['SQ10'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($sq_answers['SQ11'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($sq_answers['SQ12'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($eq_answers['E2']['opening_mm'] ?? 40) <= 35) $jointSymptoms++;
+            if (($sq_answers['SQ13'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($sq_answers['SQ14'] ?? 'Tidak') === 'Ya') $jointSymptoms++;
+            if (($eq_answers['E3'] ?? 'Tidak ada') === 'Krepitasi') $jointSymptoms++;
 
-        // Joint-related TMD hanya jika ada minimal 2 gejala sendi
-        if ($jointSymptoms >= 2) {
-            $isJointRelated = true;
-        }
+            // Joint-related TMD hanya jika ada minimal 2 gejala sendi
+            if ($jointSymptoms >= 2) {
+                $isJointRelated = true;
+            }
 
-        if ($isJointRelated) {
-            $diagnoses[] = 'Joint-related TMD';
+            if ($isJointRelated) {
+                $diagnoses[] = 'Joint-related TMD';
+            }
         }
 
 

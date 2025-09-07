@@ -102,7 +102,10 @@
         {{-- E1 --}}
         <div class="mb-6">
             <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Ringan</label>
-            <p class="text-sm text-gray-600 mb-4">Tekan ringan area berikut dengan jari Anda. Pilih tingkat nyeri yang Anda rasakan:</p>
+            <p class="text-sm text-gray-600 mb-4">Tekan ringan area berikut dengan jari Anda sesuai dengan gambar di bawah. Pilih tingkat nyeri yang Anda rasakan:</p>
+            <div class="flex justify-center mb-4">
+                <img src="{{ asset('images/e1.png') }}" alt="Referensi Pemeriksaan Nyeri Tekan" class="w-full max-w-md rounded-lg shadow-md">
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="e1_temporalis" class="block text-sm font-medium text-gray-600">Pelipis (Temporalis)</label>
@@ -176,19 +179,13 @@
                 </div>
 
                 <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Klik tunggal" id="e3_click_single" class="mr-3">
-                    <label for="e3_click_single" class="text-gray-700 mr-4">Bunyi klik tunggal (terdengar sekali)</label>
+                    <input type="radio" name="eq[E3]" value="Kliking" id="e3_click_single" class="mr-3">
+                    <label for="e3_click_single" class="text-gray-700 mr-4">Bunyi kliking</label>
                     <audio controls src="{{ asset('sounds/kliktunggaldanganda.wav') }}" class="h-8"></audio>
                 </div>
 
                 <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Klik ganda" id="e3_click_double" class="mr-3">
-                    <label for="e3_click_double" class="text-gray-700 mr-4">Bunyi klik ganda (terdengar berulang)</label>
-                    <audio controls src="{{ asset('sounds/kliktunggaldanganda.wav') }}" class="h-8"></audio>
-                </div>
-
-                <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Krepitasi kasar" id="e3_crepitation" class="mr-3">
+                    <input type="radio" name="eq[E3]" value="Krepitasi" id="e3_crepitation" class="mr-3">
                     <label for="e3_crepitation" class="text-gray-700 mr-4">Bunyi kasar seperti pasir (krepitasi)</label>
                     <audio controls src="{{ asset('sounds/krepitasi.wav') }}" class="h-8"></audio>
                 </div>
