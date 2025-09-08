@@ -105,7 +105,7 @@
             <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Ringan</label>
             <p class="text-sm text-gray-600 mb-4">Tekan ringan area berikut dengan jari Anda sesuai dengan gambar di bawah. Pilih tingkat nyeri yang Anda rasakan:</p>
             <div class="flex justify-center mb-4">
-                <img src="{{ $assets['image'] }}" alt="Referensi Pemeriksaan Nyeri Tekan" class="w-full max-w-md rounded-lg shadow-md">
+                <img src="{{ asset('images/e1.png') }}" alt="Referensi Pemeriksaan Nyeri Tekan" class="w-full max-w-md rounded-lg shadow-md">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -182,13 +182,13 @@
                 <div class="flex items-center">
                     <input type="radio" name="eq[E3]" value="Kliking" id="e3_click_single" class="mr-3">
                     <label for="e3_click_single" class="text-gray-700 mr-4">Bunyi kliking</label>
-                    <audio controls src="{{ $assets['sound1'] }}" class="h-8"></audio>
+                    <audio controls src="{{ asset('sounds/kliktunggaldanganda.wav') }}" class="h-8"></audio>
                 </div>
 
                 <div class="flex items-center">
                     <input type="radio" name="eq[E3]" value="Krepitasi" id="e3_crepitation" class="mr-3">
                     <label for="e3_crepitation" class="text-gray-700 mr-4">Bunyi kasar seperti pasir (krepitasi)</label>
-                    <audio controls src="{{ $assets['sound2'] }}" class="h-8"></audio>
+                    <audio controls src="{{ asset('sounds/krepitasi.wav') }}" class="h-8"></audio>
                 </div>
             </div>
         </div>
