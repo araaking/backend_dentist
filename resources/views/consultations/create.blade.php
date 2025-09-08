@@ -60,8 +60,9 @@
         <div class="mb-6">
             <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ6'] }}</label>
             <div class="flex items-center">
-                <input type="radio" name="sq[SQ6]" value="< 1x/minggu" class="mr-2" checked> Kurang dari 1x/minggu
+                <input type="radio" name="sq[SQ6]" value="< 1x/minggu" class="mr-2"> Kurang dari 1x/minggu
                 <input type="radio" name="sq[SQ6]" value=">= 1x/minggu" class="ml-4 mr-2"> 1x/minggu atau lebih
+                <input type="radio" name="sq[SQ6]" value="Tidak" class="ml-4 mr-2" checked> Tidak
             </div>
         </div>
 
@@ -207,7 +208,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="e4_masseter" class="block text-sm font-medium text-gray-600">Pipis (Masseter)</label>
+                    <label for="e4_masseter" class="block text-sm font-medium text-gray-600">Pipi (Masseter)</label>
                     <select name="eq[E4][Masseter]" id="e4_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
                         <option value="0">0 - Tidak Nyeri</option>
                         <option value="1">1 - Nyeri Ringan</option>

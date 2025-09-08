@@ -115,7 +115,7 @@ class ConsultationController extends Controller
         // HA-TMD Diagnosis
         if (empty($diagnoses) &&
             ($sq_answers['SQ5'] ?? 'Tidak') === 'Ya' &&
-            ($sq_answers['SQ6'] ?? '< 1x/minggu') === '>= 1x/minggu' &&
+            ($sq_answers['SQ6'] ?? 'Tidak') === '>= 1x/minggu' &&
             ($sq_answers['SQ7'] ?? 'Tidak') === 'Ya'
         ) {
             $diagnoses[] = 'Headache attributed to TMD (HA-TMD)';
