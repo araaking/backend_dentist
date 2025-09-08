@@ -52,7 +52,12 @@ class ConsultationController extends Controller
     {
         $sq_questions = $this->sq_questions;
         $eq_questions = $this->eq_questions;
-        return view('consultations.create', compact('sq_questions', 'eq_questions'));
+        $assets = [
+            'image' => 'assets/images/e1.png',
+            'sound1' => 'assets/sounds/kliktunggaldanganda.wav',
+            'sound2' => 'assets/sounds/krepitasi.wav',
+        ];
+        return view('consultations.create', compact('sq_questions', 'eq_questions', 'assets'));
     }
 
      /**
