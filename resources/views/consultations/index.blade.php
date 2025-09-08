@@ -26,6 +26,17 @@
                             </a>
                         </div>
 
+                        @php
+                            $e2Answer = $consultation->answers->where('question_code', 'E2')->first();
+                            $e2Data = $e2Answer ? json_decode($e2Answer->answer, true) : null;
+                        @endphp
+
+                        @if($e2Data && isset($e2Data['photo_path']))
+                            <div class="mb-4">
+                                <img src="{{ asset('storage/' . $e2Data['photo_path']) }}" alt="Foto Mulut Terbuka" class="w-32 h-32 object-cover rounded-lg shadow-md">
+                            </div>
+                        @endif
+
                         <div class="border-t pt-4">
                             <h3 class="font-semibold text-gray-700 mb-2">Diagnosis:</h3>
                             @if($consultation->diagnoses->isEmpty())

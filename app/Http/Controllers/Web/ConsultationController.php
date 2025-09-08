@@ -41,7 +41,7 @@ class ConsultationController extends Controller
      */
     public function index()
     {
-        $consultations = Auth::user()->patient->consultations()->with('diagnoses')->latest()->get();
+        $consultations = Auth::user()->patient->consultations()->with('diagnoses', 'answers')->latest()->get();
         return view('consultations.index', compact('consultations'));
     }
 
@@ -60,28 +60,39 @@ class ConsultationController extends Controller
      */
     public function store(Request $request)
     {
-        // Basic validation
+        // Basic validation - tambahkan support untuk format API
         $request->validate([
             'sq' => 'required|array',
             'eq' => 'required|array',
-            'e2_photo' => 'nullable|string', // Now expecting a base64 string
+            'e2_photo' => 'nullable|string', // base64 dari web
+            // Tambahkan field untuk handle data dari API
+            'e2_data' => 'nullable|array', // untuk data dari API
         ]);
 
         $sq_answers = $request->input('sq');
         $eq_answers = $request->input('eq');
         $diagnoses = [];
 
-        // Handle photo from base64 for E2
+        // Handle photo - support multiple sources
         $photoPath = null;
+        
+        // 1. Priority: Base64 dari web form
         if ($request->filled('e2_photo')) {
             $imageData = $request->input('e2_photo');
-            // Remove the data URL scheme and get the raw base64 data
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $imageData);
             $imageData = base64_decode($imageData);
             
             $filename = 'consultation_photos/' . uniqid() . '.jpg';
             \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $imageData);
             $photoPath = $filename;
+        }
+        // 2. Fallback: Data dari API (Flutter)
+        elseif ($request->filled('e2_data.photo_path')) {
+            $photoPath = $request->input('e2_data.photo_path');
+        }
+        // 3. Fallback: Data dari structured EQ answers
+        elseif (isset($eq_answers['E2']['photo_path'])) {
+            $photoPath = $eq_answers['E2']['photo_path'];
         }
 
         // Myalgia Diagnosis
@@ -165,9 +176,12 @@ class ConsultationController extends Controller
             }
             foreach ($request->input('eq') as $key => $value) {
                 if ($key === 'E2') {
-                    // Special handling for E2 with photo
+                    // Handle both web and API formats
+                    $openingMm = $value['opening_mm'] ?? 
+                                ($request->input('e2_data.opening_mm') ?? null);
+                    
                     $e2Data = [
-                        'opening_mm' => $value['opening_mm'] ?? null,
+                        'opening_mm' => $openingMm,
                         'photo_path' => $photoPath
                     ];
                     $consultation->answers()->create([
@@ -213,6 +227,8 @@ class ConsultationController extends Controller
         if (!$userPatientId || $userPatientId !== (int) $consultation->patient_id) {
             abort(403);
         }
+
+        $consultation->load(['answers', 'diagnoses']);
 
         return view('consultations.show', compact('consultation'));
     }
