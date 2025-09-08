@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -15,6 +16,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
+            'name' => 'required|string|max:255', // Tambah field name
         ]);
 
         $user = User::create([
@@ -22,10 +24,17 @@ class AuthController extends Controller
             'password' => $data['password'], // hashed by cast
         ]);
 
+        // Buat patient profile setelah registrasi
+        $patient = Patient::create([
+            'name' => $data['name'],
+            'user_id' => $user->id,
+        ]);
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
+            'patient' => $patient, // Tambah patient di response
             'token' => $token,
             'token_type' => 'Bearer',
         ], 201);
