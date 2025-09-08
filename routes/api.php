@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PatientController as ApiPatientController;
 use App\Http\Controllers\Api\ConsultationController as ApiConsultationController;
+use App\Http\Controllers\Api\QuestionsController as ApiQuestionsController;
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -16,6 +17,9 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Questions metadata for Flutter
+    Route::get('questions', [ApiQuestionsController::class, 'index']);
+
     // Patient profile
     Route::get('patient', [ApiPatientController::class, 'show']);
     Route::post('patient', [ApiPatientController::class, 'store']);

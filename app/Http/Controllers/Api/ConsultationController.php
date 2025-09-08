@@ -36,16 +36,19 @@ class ConsultationController extends Controller
         $validated = $request->validate([
             'sq' => 'required|array',
             'eq' => 'required|array',
-            'e2_photo' => 'nullable|string',
+            'e2_photo' => 'nullable|string', // base64
+            'e2_photo_file' => 'nullable|file|mimes:jpg,jpeg,png|max:5120', // multipart
         ]);
 
         $sq_answers = $validated['sq'];
         $eq_answers = $validated['eq'];
         $diagnoses = [];
 
-        // Handle photo from base64 for E2
+        // Handle photo for E2 (prefer multipart over base64 if both present)
         $photoPath = null;
-        if (!empty($validated['e2_photo'])) {
+        if ($request->hasFile('e2_photo_file')) {
+            $photoPath = $request->file('e2_photo_file')->store('consultation_photos', 'public');
+        } elseif (!empty($validated['e2_photo'])) {
             $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $validated['e2_photo']);
             $imageData = base64_decode($imageData);
             $filename = 'consultation_photos/' . uniqid() . '.jpg';
@@ -90,7 +93,7 @@ class ConsultationController extends Controller
             $diagnoses[] = 'Headache attributed to TMD (HA-TMD)';
         }
 
-        // Joint-related TMD - Lebih spesifik berdasarkan kriteria
+        // Joint-related TMD
         if (empty($diagnoses)) {
             $isJointRelated = false;
             $jointSymptoms = 0;
