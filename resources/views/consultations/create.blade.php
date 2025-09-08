@@ -118,7 +118,7 @@
                     </select>
                 </div>
                 <div>
-                    <label for="e1_masseter" class="block text-sm font-medium text-gray-600">Pipis (Masseter)</label>
+                    <label for="e1_masseter" class="block text-sm font-medium text-gray-600">Pipi (Masseter)</label>
                     <select name="eq[E1][Masseter]" id="e1_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
                         <option value="0">0 - Tidak Nyeri</option>
                         <option value="1">1 - Nyeri Ringan</option>
