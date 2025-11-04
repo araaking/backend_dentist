@@ -60,6 +60,11 @@ class ConsultationController extends Controller
      */
     public function store(Request $request)
     {
+        // Early session validation to prevent 419 errors
+        if (!Auth::check() || !Auth::user()->patient) {
+            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
+        }
+
         // Basic validation - tambahkan support untuk format API
         $request->validate([
             'sq' => 'required|array',

@@ -5,7 +5,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-8">
     <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold">Selamat Datang, {{ auth()->user()->patient->name }}!</h1>
+        <h1 class="text-3xl font-bold">Selamat Datang, {{ auth()->user()->patient->name ?? 'User' }}!</h1>
         <p class="text-gray-600">Apa yang ingin Anda lakukan hari ini?</p>
     </div>
 
@@ -23,10 +23,17 @@
         </a>
 
         <!-- Edit Profile Card -->
+        @if(auth()->user()->patient)
         <a href="{{ route('patients.edit', auth()->user()->patient->id) }}" class="block p-6 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition text-center">
             <h2 class="text-xl font-bold mb-2">Edit Profile</h2>
             <p>Perbarui informasi profil dan data diri Anda.</p>
         </a>
+        @else
+        <a href="{{ route('patients.create') }}" class="block p-6 bg-yellow-500 text-white rounded-lg shadow-md hover:bg-yellow-600 transition text-center">
+            <h2 class="text-xl font-bold mb-2">Create Profile</h2>
+            <p>Lengkapi data profil Anda terlebih dahulu.</p>
+        </a>
+        @endif
     </div>
 
     <div class="mt-8 text-center">

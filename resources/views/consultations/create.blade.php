@@ -249,6 +249,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const context = canvas.getContext('2d');
     let stream;
 
+    // Auto-refresh CSRF token every 10 minutes to prevent 419 errors
+    setInterval(async () => {
+        try {
+            const response = await fetch('{{ route("consultations.create") }}');
+            const html = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newToken = doc.querySelector('input[name="_token"]').value;
+            document.querySelector('input[name="_token"]').value = newToken;
+            console.log('CSRF token refreshed');
+        } catch (error) {
+            console.error('Failed to refresh CSRF token:', error);
+        }
+    }, 600000); // 10 minutes
+
     startCameraButton.addEventListener('click', async () => {
         try {
             stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -286,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         snapButton.style.display = 'block';
         startCameraButton.click(); // Re-start the camera flow
     });
+});
 });
 </script>
 @endpush
