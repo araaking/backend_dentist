@@ -28,3 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('consultations', ConsultationController::class)->only(['index', 'create', 'store', 'show']);
     Route::resource('patients', PatientController::class)->only(['edit', 'update']);
 });
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+});

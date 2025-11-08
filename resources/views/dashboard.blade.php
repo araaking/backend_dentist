@@ -36,11 +36,24 @@
         @endif
     </div>
 
+    <!-- Admin Dashboard Link (only for admin) -->
+    @if(auth()->user()->email === 'admin@dentist.com')
+    <div class="mt-8 text-center">
+        <a href="{{ route('admin.dashboard') }}" class="bg-purple-600 text-white py-2 px-6 rounded-lg hover:bg-purple-700 transition inline-block mr-4">
+            <i class="fas fa-user-shield mr-2"></i>Admin Dashboard
+        </a>
+        <form action="{{ route('logout') }}" method="POST" class="inline">
+            @csrf
+            <button type="submit" class="bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-600 transition">Logout</button>
+        </form>
+    </div>
+    @else
     <div class="mt-8 text-center">
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit" class="bg-red-500 text-white py-2 px-6 rounded-lg hover:bg-red-600 transition">Logout</button>
         </form>
     </div>
+    @endif
 </div>
 @endsection
