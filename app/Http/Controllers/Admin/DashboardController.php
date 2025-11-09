@@ -18,7 +18,7 @@ class DashboardController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
         // Statistik Data Pasien
         $totalPatients = Patient::count();
@@ -26,6 +26,12 @@ class DashboardController extends Controller
                                        ->whereYear('created_at', now()->year)
                                        ->count();
         $latestPatients = Patient::latest()->take(10)->get();
+
+        // Get all patients with pagination for the "All Patients" section
+        $allPatients = Patient::with('user')
+            ->withCount('consultations')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
         // Statistik Data Diagnosis
         $diagnosisStats = Diagnosis::select('name', DB::raw('count(*) as count'))
@@ -89,6 +95,7 @@ class DashboardController extends Controller
             'totalPatients',
             'newPatientsThisMonth',
             'latestPatients',
+            'allPatients',
             'diagnosisPercentages',
             'totalDiagnoses',
             'totalConsultations',
