@@ -62,7 +62,7 @@ class DashboardController extends Controller
         // Pasien dengan konsultasi terbanyak
         $mostActivePatients = DB::table('patients as p')
             ->join('consultations as c', 'p.id', '=', 'c.patient_id')
-            ->select('p.name', DB::raw('COUNT(c.id) as consultation_count'))
+            ->select('p.id', 'p.name', DB::raw('COUNT(c.id) as consultation_count'))
             ->groupBy('p.id', 'p.name')
             ->orderByDesc('consultation_count')
             ->limit(5)
