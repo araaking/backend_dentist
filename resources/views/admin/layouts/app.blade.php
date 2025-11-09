@@ -20,6 +20,9 @@
                         <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">
                             <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
                         </a>
+                        <a href="{{ route('admin.patients.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">
+                            <i class="fas fa-users mr-1"></i> Pasien
+                        </a>
                         <a href="{{ route('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">
                             <i class="fas fa-home mr-1"></i> User Dashboard
                         </a>

@@ -6,11 +6,18 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h1 class="text-3xl font-bold text-gray-800">
-            <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
-            Admin Dashboard
-        </h1>
-        <p class="text-gray-600 mt-2">Statistik keseluruhan data klinik dentist</p>
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">
+                    <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
+                    Admin Dashboard
+                </h1>
+                <p class="text-gray-600 mt-2">Statistik keseluruhan data klinik dentist</p>
+            </div>
+            <a href="{{ route('admin.patients.index') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
+                <i class="fas fa-users mr-2"></i>Lihat Semua Pasien
+            </a>
+        </div>
     </div>
 
     <!-- Statistics Cards -->
@@ -85,6 +92,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -92,10 +100,15 @@
                                 <tr>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ $patient->created_at->format('d/m/Y') }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                        <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-eye"></i> Lihat Detail
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="2" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data pasien</td>
+                                    <td colspan="3" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data pasien</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -144,6 +157,7 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pasien</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Konsultasi</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -151,10 +165,15 @@
                                 <tr>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ $patient->consultation_count }}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                        <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-eye"></i> Lihat Detail
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="2" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data konsultasi</td>
+                                    <td colspan="3" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data konsultasi</td>
                                 </tr>
                             @endforelse
                         </tbody>

@@ -31,4 +31,6 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/patients', [App\Http\Controllers\Admin\PatientController::class, 'index'])->name('admin.patients.index');
+    Route::get('/admin/patients/{patient}', [App\Http\Controllers\Admin\PatientController::class, 'show'])->name('admin.patients.show');
 });
