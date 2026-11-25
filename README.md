@@ -1,6 +1,6 @@
 # Backend Dentist (TMD Self-Diagnosis)
 
-Aplikasi Laravel 12 untuk diagnosis mandiri gangguan sendi rahang (TMD):
+Aplikasi Laravel 13 untuk diagnosis mandiri gangguan sendi rahang (TMD):
 
 - **Web (Blade)**: registrasi/login pasien, formulir self-diagnosis, riwayat, dan dashboard admin.
 - **API JSON** (`/api`, Laravel Sanctum, token Bearer) untuk aplikasi mobile Flutter. Dokumentasi: [docs/API.md](docs/API.md).
@@ -9,10 +9,10 @@ Data yang diproses adalah **data kesehatan**. Foto bukaan mulut (E2) disimpan di
 
 ## Kebutuhan
 
-- PHP **>= 8.3** (ekstensi: `fileinfo`, `mbstring`, `pdo_mysql`/`pdo_sqlite`, `openssl`, `ctype`, `json`, `tokenizer`, `xml`)
+- PHP **>= 8.3** (diuji di CI pada PHP 8.3 dan 8.4; ekstensi: `fileinfo`, `mbstring`, `pdo_mysql`/`pdo_sqlite`, `openssl`, `ctype`, `json`, `tokenizer`, `xml`)
 - Composer 2
 - MySQL/MariaDB (atau SQLite untuk pengembangan/test)
-- Node.js (opsional, hanya jika memakai Vite)
+- Node.js **>= 22.12** (opsional, hanya untuk build aset Vite 8 / `npm ci && npm run build`)
 
 ## Setup lokal
 
@@ -32,6 +32,13 @@ Menjalankan test (Pest, SQLite in-memory):
 ```bash
 php artisan test
 ```
+
+## CI
+
+GitHub Actions (`.github/workflows/tests.yml`) berjalan pada push/pull request ke `main` dan manual (`workflow_dispatch`):
+
+- Job `tests`: matriks PHP 8.3 dan 8.4, `composer install`, `php artisan test`, `composer audit --locked`.
+- Job `assets`: Node 22, `npm ci`, `npm run build`, `npm audit --audit-level=high`.
 
 ## Admin
 
