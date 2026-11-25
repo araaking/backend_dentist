@@ -11,88 +11,23 @@
 
         <h2 class="text-2xl font-semibold mb-6 border-b pb-2">Pertanyaan Subjektif (SQ)</h2>
 
-        {{-- SQ1 --}}
+        @foreach ($sq_questions as $code => $question)
+        @php($optionLabels = \App\Support\TmdQuestionnaire::WEB_OPTION_LABELS[$code] ?? [])
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ1'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ1]" value="Ya" class="mr-2"> Ya
-                <input type="radio" name="sq[SQ1]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ2 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ2'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ2]" value="< 1 minggu" class="mr-2" checked> Kurang dari 1 minggu
-                <input type="radio" name="sq[SQ2]" value=">= 1 minggu" class="ml-4 mr-2"> 1 minggu atau lebih
-            </div>
-        </div>
-
-        {{-- SQ3 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ3'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ3]" value="Ya" class="mr-2"> Ya (Persisten/Kambuhan)
-                <input type="radio" name="sq[SQ3]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ4 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ4'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ4]" value="Ya" class="mr-2"> Ya
-                <input type="radio" name="sq[SQ4]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ5 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ5'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ5]" value="Ya" class="mr-2"> Ya
-                <input type="radio" name="sq[SQ5]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ6 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ6'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ6]" value="< 1x/minggu" class="mr-2"> Kurang dari 1x/minggu
-                <input type="radio" name="sq[SQ6]" value=">= 1x/minggu" class="ml-4 mr-2"> 1x/minggu atau lebih
-                <input type="radio" name="sq[SQ6]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ7 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ7'] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ7]" value="Ya" class="mr-2"> Ya
-                <input type="radio" name="sq[SQ7]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
-        </div>
-
-        {{-- SQ8 --}}
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ8'] }}</label>
-            <select name="sq[SQ8]" class="w-full px-3 py-2 border rounded-lg">
-                <option value="Tidak ada">Tidak ada</option>
-                <option value="Sesekali">Sesekali</option>
-                <option value="Sering">Sering</option>
-            </select>
-        </div>
-
-        {{-- SQ9 to SQ14 --}}
-        @foreach (range(9, 14) as $i)
-        <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">{{ $sq_questions['SQ'.$i] }}</label>
-            <div class="flex items-center">
-                <input type="radio" name="sq[SQ{{$i}}]" value="Ya" class="mr-2"> Ya
-                <input type="radio" name="sq[SQ{{$i}}]" value="Tidak" class="ml-4 mr-2" checked> Tidak
-            </div>
+            <label class="block text-gray-700 font-bold mb-2">{{ $question['text'] }}</label>
+            @if ($question['type'] === 'select')
+                <select name="sq[{{ $code }}]" class="w-full px-3 py-2 border rounded-lg">
+                    @foreach ($question['options'] as $option)
+                        <option value="{{ $option }}" @selected(old("sq.$code", $question['default']) === $option)>{{ $optionLabels[$option] ?? $option }}</option>
+                    @endforeach
+                </select>
+            @else
+                <div class="flex items-center">
+                    @foreach ($question['options'] as $option)
+                        <input type="radio" name="sq[{{ $code }}]" value="{{ $option }}" class="{{ $loop->first ? 'mr-2' : 'ml-4 mr-2' }}" @checked(old("sq.$code", $question['default']) === $option)> {{ $optionLabels[$option] ?? $option }}
+                    @endforeach
+                </div>
+            @endif
         </div>
         @endforeach
 
@@ -102,48 +37,31 @@
 
         {{-- E1 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Ringan</label>
+            <label class="block text-gray-700 font-bold mb-2">{{ $eq_titles['E1'] }}</label>
             <p class="text-sm text-gray-600 mb-4">Tekan ringan area berikut dengan jari Anda sesuai dengan gambar di bawah. Pilih tingkat nyeri yang Anda rasakan:</p>
             <div class="flex justify-center mb-4">
                 <img src="{{ asset('images/e1.png') }}" alt="Referensi Pemeriksaan Nyeri Tekan" class="w-full max-w-md rounded-lg shadow-md">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @foreach (\App\Support\TmdQuestionnaire::AREAS as $area)
                 <div>
-                    <label for="e1_temporalis" class="block text-sm font-medium text-gray-600">Pelipis (Temporalis)</label>
-                    <select name="eq[E1][Temporalis]" id="e1_temporalis" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
+                    <label for="e1_{{ strtolower($area) }}" class="block text-sm font-medium text-gray-600">{{ \App\Support\TmdQuestionnaire::AREA_LABELS[$area] }}</label>
+                    <select name="eq[E1][{{ $area }}]" id="e1_{{ strtolower($area) }}" class="w-full mt-1 px-3 py-2 border rounded-lg">
+                        @foreach (\App\Support\TmdQuestionnaire::SCORE_LABELS as $score => $label)
+                            <option value="{{ $score }}" @selected((string) old("eq.E1.$area", 0) === (string) $score)>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
-                <div>
-                    <label for="e1_masseter" class="block text-sm font-medium text-gray-600">Pipi (Masseter)</label>
-                    <select name="eq[E1][Masseter]" id="e1_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="e1_tmj" class="block text-sm font-medium text-gray-600">Sendi Rahang (TMJ)</label>
-                    <select name="eq[E1][TMJ]" id="e1_tmj" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
-                    </select>
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- E2 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">Pengukuran Bukaan Mulut Maksimal</label>
+            <label class="block text-gray-700 font-bold mb-2">{{ $eq_titles['E2'] }}</label>
             <div class="space-y-4">
                 <div>
-                    <input type="number" name="eq[E2][opening_mm]" id="e2_opening" class="w-full px-3 py-2 border rounded-lg" placeholder="Contoh: 40" required>
+                    <input type="number" name="eq[E2][opening_mm]" id="e2_opening" class="w-full px-3 py-2 border rounded-lg" placeholder="Contoh: 40" min="0" max="100" step="any" value="{{ old('eq.E2.opening_mm') }}" required>
                     <p class="text-sm text-gray-500 mt-1">Buka mulut Anda selebar mungkin dan ukur jarak antara gigi atas dan bawah dalam milimeter (mm).</p>
                 </div>
                 <div>
@@ -171,60 +89,36 @@
 
         {{-- E3 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Bunyi Sendi Rahang</label>
+            <label class="block text-gray-700 font-bold mb-2">{{ $eq_titles['E3'] }}</label>
             <p class="text-sm text-gray-600 mb-4">Buka dan tutup mulut Anda beberapa kali. Dengarkan contoh bunyi berikut dan pilih yang paling sesuai dengan yang Anda dengar.</p>
             <div class="space-y-4">
+                @foreach ($e3_options as $i => $option)
                 <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Tidak ada" id="e3_none" class="mr-3" checked>
-                    <label for="e3_none" class="text-gray-700">Tidak ada bunyi</label>
+                    <input type="radio" name="eq[E3]" value="{{ $option['value'] }}" id="e3_option_{{ $i }}" class="mr-3" @checked(old('eq.E3', \App\Support\TmdQuestionnaire::e3Default()) === $option['value'])>
+                    <label for="e3_option_{{ $i }}" class="text-gray-700 {{ isset($option['audio']) ? 'mr-4' : '' }}">{{ $option['label'] }}</label>
+                    @isset($option['audio'])
+                        <audio controls src="{{ asset($option['audio']) }}" class="h-8"></audio>
+                    @endisset
                 </div>
-
-                <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Kliking" id="e3_click_single" class="mr-3">
-                    <label for="e3_click_single" class="text-gray-700 mr-4">Bunyi kliking</label>
-                    <audio controls src="{{ asset('sounds/kliktunggaldanganda.wav') }}" class="h-8"></audio>
-                </div>
-
-                <div class="flex items-center">
-                    <input type="radio" name="eq[E3]" value="Krepitasi" id="e3_crepitation" class="mr-3">
-                    <label for="e3_crepitation" class="text-gray-700 mr-4">Bunyi kasar seperti pasir (krepitasi)</label>
-                    <audio controls src="{{ asset('sounds/krepitasi.wav') }}" class="h-8"></audio>
-                </div>
+                @endforeach
             </div>
         </div>
 
         {{-- E4 --}}
         <div class="mb-6">
-            <label class="block text-gray-700 font-bold mb-2">Pemeriksaan Nyeri Tekan Lebih Dalam</label>
+            <label class="block text-gray-700 font-bold mb-2">{{ $eq_titles['E4'] }}</label>
             <p class="text-sm text-gray-600 mb-4">Tekan lebih dalam pada area berikut. Beri nilai nyeri yang Anda rasakan:</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                @foreach (\App\Support\TmdQuestionnaire::AREAS as $area)
                 <div>
-                    <label for="e4_temporalis" class="block text-sm font-medium text-gray-600">Pelipis (Temporalis)</label>
-                    <select name="eq[E4][Temporalis]" id="e4_temporalis" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
+                    <label for="e4_{{ strtolower($area) }}" class="block text-sm font-medium text-gray-600">{{ \App\Support\TmdQuestionnaire::AREA_LABELS[$area] }}</label>
+                    <select name="eq[E4][{{ $area }}]" id="e4_{{ strtolower($area) }}" class="w-full mt-1 px-3 py-2 border rounded-lg">
+                        @foreach (\App\Support\TmdQuestionnaire::SCORE_LABELS as $score => $label)
+                            <option value="{{ $score }}" @selected((string) old("eq.E4.$area", 0) === (string) $score)>{{ $label }}</option>
+                        @endforeach
                     </select>
                 </div>
-                <div>
-                    <label for="e4_masseter" class="block text-sm font-medium text-gray-600">Pipi (Masseter)</label>
-                    <select name="eq[E4][Masseter]" id="e4_masseter" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="e4_tmj" class="block text-sm font-medium text-gray-600">Sendi Rahang (TMJ)</label>
-                    <select name="eq[E4][TMJ]" id="e4_tmj" class="w-full mt-1 px-3 py-2 border rounded-lg">
-                        <option value="0">0 - Tidak Nyeri</option>
-                        <option value="1">1 - Nyeri Ringan</option>
-                        <option value="2">2 - Nyeri Sedang</option>
-                        <option value="3">3 - Nyeri Berat</option>
-                    </select>
-                </div>
+                @endforeach
             </div>
         </div>
 
@@ -301,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         snapButton.style.display = 'block';
         startCameraButton.click(); // Re-start the camera flow
     });
-});
 });
 </script>
 @endpush

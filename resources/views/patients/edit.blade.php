@@ -1,16 +1,11 @@
 @extends('layouts.app')
 
 @section('title', 'Edit Profile')
+@section('has_inline_errors', '1')
 
 @section('content')
 <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
     <h1 class="text-2xl font-bold mb-6">Edit Profile</h1>
-
-    @if (session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
 
     <form action="{{ route('patients.update', $patient->id) }}" method="POST">
         @csrf
@@ -35,6 +30,7 @@
         <div class="mb-4">
             <label for="gender" class="block text-gray-700 font-bold mb-2">Jenis Kelamin</label>
             <select name="gender" id="gender" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('gender') border-red-500 @enderror">
+                <option value="">-</option>
                 <option value="Male" {{ old('gender', $patient->gender) == 'Male' ? 'selected' : '' }}>Laki-laki</option>
                 <option value="Female" {{ old('gender', $patient->gender) == 'Female' ? 'selected' : '' }}>Perempuan</option>
             </select>
@@ -59,6 +55,31 @@
                 Kembali ke Dashboard
             </a>
         </div>
+    </form>
+</div>
+
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md mt-6 border border-red-200">
+    <h2 class="text-xl font-bold text-red-700 mb-2">Hapus Akun</h2>
+    <p class="text-sm text-gray-600 mb-4">
+        Menghapus akun akan menghapus secara permanen profil, seluruh riwayat diagnosis, jawaban, dan foto Anda.
+        Tindakan ini tidak dapat dibatalkan.
+    </p>
+
+    <form action="{{ route('account.destroy') }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun Anda secara permanen? Tindakan ini tidak dapat dibatalkan.');">
+        @csrf
+        @method('DELETE')
+
+        <div class="mb-4">
+            <label for="delete_password" class="block text-gray-700 font-bold mb-2">Konfirmasi Password</label>
+            <input type="password" name="password" id="delete_password" required autocomplete="current-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline @error('password') border-red-500 @enderror">
+            @error('password')
+                <p class="text-red-500 text-xs italic mt-2">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Hapus Akun Saya
+        </button>
     </form>
 </div>
 @endsection

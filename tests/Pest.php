@@ -12,7 +12,7 @@
 */
 
 pest()->extend(Tests\TestCase::class)
- // ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -41,7 +41,73 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+use App\Models\Consultation;
+use App\Models\Patient;
+use App\Models\User;
+use App\Services\ConsultationRecorder;
+
+/** PNG 1x1 valid, dalam base64. */
+function tinyPngBase64(): string
 {
-    // ..
+    return 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+}
+
+function tinyPngBinary(): string
+{
+    return base64_decode(tinyPngBase64());
+}
+
+/** Buat user (+ profil pasien) dengan password 'password123'. */
+function makeUser(array $attributes = [], bool $withPatient = true, array $patient = []): User
+{
+    $user = User::create(array_merge([
+        'email' => fake()->unique()->safeEmail(),
+        'password' => 'password123',
+    ], $attributes));
+
+    if ($withPatient) {
+        $user->patient()->create(array_merge(['name' => fake()->name()], $patient));
+    }
+
+    return $user->fresh();
+}
+
+function makeAdmin(array $attributes = []): User
+{
+    $user = makeUser($attributes);
+    $user->forceFill(['is_admin' => true])->save();
+
+    return $user->fresh();
+}
+
+/** Payload konsultasi yang valid (semua jawaban default). */
+function consultationPayload(array $overrides = []): array
+{
+    $sq = [];
+    foreach (\App\Support\TmdQuestionnaire::sq() as $code => $q) {
+        $sq[$code] = $q['default'];
+    }
+
+    $zeros = ['Temporalis' => 0, 'Masseter' => 0, 'TMJ' => 0];
+
+    return array_replace_recursive([
+        'sq' => $sq,
+        'eq' => [
+            'E1' => $zeros,
+            'E2' => ['opening_mm' => 40],
+            'E3' => 'Tidak ada',
+            'E4' => $zeros,
+        ],
+    ], $overrides);
+}
+
+/** Simpan konsultasi langsung lewat service (opsional dengan foto). */
+function makeConsultation(Patient $patient, bool $withPhoto = false, array $overrides = []): Consultation
+{
+    return app(ConsultationRecorder::class)->record(
+        $patient,
+        consultationPayload($overrides),
+        null,
+        $withPhoto ? tinyPngBase64() : null,
+    );
 }

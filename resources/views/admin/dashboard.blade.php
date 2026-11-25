@@ -228,12 +228,15 @@
                 Daftar Semua Pasien
             </h2>
             <div class="flex items-center space-x-2">
-                <div class="relative">
-                    <input type="text" placeholder="Cari pasien..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <form method="GET" action="{{ route('admin.dashboard') }}#all-patients" class="relative">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" maxlength="100" placeholder="Cari nama, telepon, atau email..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-search text-gray-400"></i>
                     </div>
-                </div>
+                </form>
+                @if(!empty($search))
+                    <a href="{{ route('admin.dashboard') }}#all-patients" class="text-sm text-blue-600 hover:text-blue-800">Reset</a>
+                @endif
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -277,7 +280,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
-                                Belum ada data pasien
+                                {{ !empty($search) ? 'Tidak ada pasien yang cocok dengan pencarian.' : 'Belum ada data pasien' }}
                             </td>
                         </tr>
                     @endforelse
@@ -304,7 +307,7 @@
             <div class="space-y-3">
                 <div class="flex justify-between items-center">
                     <span class="text-sm text-gray-600">Rata-rata Konsultasi per Pasien:</span>
-                    <span class="text-lg font-bold text-gray-800">{{ round($avgConsultationsPerPatient, 2) }}</span>
+                    <span class="text-lg font-bold text-gray-800">{{ round((float) $avgConsultationsPerPatient, 2) }}</span>
                 </div>
             </div>
         </div>

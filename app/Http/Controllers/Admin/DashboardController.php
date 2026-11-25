@@ -20,6 +20,8 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+
         // Statistik Data Pasien
         $totalPatients = Patient::count();
         $newPatientsThisMonth = Patient::whereMonth('created_at', now()->month)
@@ -30,8 +32,11 @@ class DashboardController extends Controller
         // Get all patients with pagination for the "All Patients" section
         $allPatients = Patient::with('user')
             ->withCount('consultations')
+            ->search($search)
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString()
+            ->fragment('all-patients');
 
         // Statistik Data Diagnosis
         $diagnosisStats = Diagnosis::select('name', DB::raw('count(*) as count'))
@@ -84,10 +89,10 @@ class DashboardController extends Controller
             ->get();
 
         // Distribusi jawaban per tipe pertanyaan
-        $answerDistributionByType = DB::table('questions as q')
-            ->join('answers as a', 'q.code', '=', 'a.question_code')
-            ->select('q.type', DB::raw('COUNT(a.id) as answer_count'))
-            ->groupBy('q.type')
+        $answerDistributionByType = Answer::query()
+            ->select('type', DB::raw('COUNT(id) as answer_count'))
+            ->whereNotNull('type')
+            ->groupBy('type')
             ->get();
 
         // Prepare data for view
@@ -102,7 +107,8 @@ class DashboardController extends Controller
             'avgConsultationsPerPatient',
             'mostActivePatients',
             'mostAnsweredQuestions',
-            'answerDistributionByType'
+            'answerDistributionByType',
+            'search'
         ));
     }
 }

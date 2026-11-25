@@ -4,58 +4,43 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
-use App\Models\Consultation;
-use App\Models\Question;
-use App\Models\Answer;
-use App\Models\ExaminationResult;
-use App\Models\Diagnosis;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PatientController extends Controller
 {
-    public function index()
-    {
-        $patients = Patient::where('user_id', Auth::id())->get();
-        return view('patients.index', compact('patients'));
-    }
-
     public function create()
     {
+        if (Auth::user()->patient) {
+            return redirect()->route('dashboard')->with('error', 'Profil pasien Anda sudah ada.');
+        }
+
         return view('patients.create');
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $user = Auth::user();
+
+        if ($user->patient) {
+            return redirect()->route('dashboard')->with('error', 'Profil pasien Anda sudah ada.');
+        }
+
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:Male,Female',
             'phone_number' => 'nullable|string|max:15',
         ]);
 
-        Patient::create([
-            'name' => $request->name,
-            'date_of_birth' => $request->date_of_birth,
-            'gender' => $request->gender,
-            'phone_number' => $request->phone_number,
-            'user_id' => Auth::id(),
-        ]);
+        $user->patient()->create($data);
 
-        return redirect()->route('patients.index');
-    }
-
-    public function show(Patient $patient)
-    {
-        if ($patient->user_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('patients.show', compact('patient'));
+        return redirect()->route('dashboard')->with('success', 'Profil pasien berhasil dibuat.');
     }
 
     public function edit(Patient $patient)
     {
-        if ($patient->user_id !== Auth::id()) {
+        if ((int) $patient->user_id !== (int) Auth::id()) {
             abort(403);
         }
         return view('patients.edit', compact('patient'));
@@ -63,28 +48,19 @@ class PatientController extends Controller
 
     public function update(Request $request, Patient $patient)
     {
-        if ($patient->user_id !== Auth::id()) {
+        if ((int) $patient->user_id !== (int) Auth::id()) {
             abort(403);
         }
 
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:Male,Female',
             'phone_number' => 'nullable|string|max:15',
         ]);
 
-        $patient->update($request->all());
+        $patient->update($data);
 
-        return redirect()->route('dashboard')->with('success', 'Profile updated successfully.');
-    }
-
-    public function destroy(Patient $patient)
-    {
-        if ($patient->user_id !== Auth::id()) {
-            abort(403);
-        }
-        $patient->delete();
-        return redirect()->route('patients.index');
+        return redirect()->route('dashboard')->with('success', 'Profil berhasil diperbarui.');
     }
 }

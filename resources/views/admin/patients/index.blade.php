@@ -21,12 +21,15 @@
                 Data Pasien
             </h2>
             <div class="flex items-center space-x-2">
-                <div class="relative">
-                    <input type="text" placeholder="Cari pasien..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <form method="GET" action="{{ route('admin.patients.index') }}" class="relative">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" maxlength="100" placeholder="Cari nama, telepon, atau email..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-search text-gray-400"></i>
                     </div>
-                </div>
+                </form>
+                @if(!empty($search))
+                    <a href="{{ route('admin.patients.index') }}" class="text-sm text-blue-600 hover:text-blue-800">Reset</a>
+                @endif
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -48,9 +51,9 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->patient_id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $patient->name }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ \Carbon\Carbon::parse($patient->date_of_birth)->format('d/m/Y') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->birth_date_label }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $patient->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}
+                                {{ $patient->gender_label }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone_number }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -70,7 +73,7 @@
                     @empty
                         <tr>
                             <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
-                                Belum ada data pasien
+                                {{ !empty($search) ? 'Tidak ada pasien yang cocok dengan pencarian.' : 'Belum ada data pasien' }}
                             </td>
                         </tr>
                     @endforelse

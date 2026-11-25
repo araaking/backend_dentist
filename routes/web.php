@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
 
 use App\Http\Controllers\Web\PatientController;
@@ -15,9 +16,9 @@ Route::get('/', function () {
 });
 
 Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register');
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
@@ -26,7 +27,10 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::resource('consultations', ConsultationController::class)->only(['index', 'create', 'store', 'show']);
-    Route::resource('patients', PatientController::class)->only(['edit', 'update']);
+    Route::get('/consultations/{consultation}/photo', [ConsultationController::class, 'photo'])->name('consultations.photo');
+    Route::resource('patients', PatientController::class)->only(['create', 'store', 'edit', 'update']);
+
+    Route::delete('/account', [AccountController::class, 'destroy'])->middleware('throttle:sensitive')->name('account.destroy');
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {

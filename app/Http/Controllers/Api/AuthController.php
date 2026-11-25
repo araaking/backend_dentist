@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Patient;
+use App\Services\AccountDeletion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -16,25 +17,37 @@ class AuthController extends Controller
         $data = $request->validate([
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
-            'name' => 'required|string|max:255', // Tambah field name
+            'name' => 'required|string|max:255',
+            // Opsional (tambahan): jika tidak dikirim, profil dibuat tanpa data ini.
+            'date_of_birth' => 'nullable|date',
+            'gender' => 'nullable|in:Male,Female',
+            'phone_number' => 'nullable|string|max:15',
         ]);
 
-        $user = User::create([
-            'email' => $data['email'],
-            'password' => $data['password'], // hashed by cast
-        ]);
+        [$user, $patient] = DB::transaction(function () use ($data) {
+            $user = User::create([
+                'email' => $data['email'],
+                'password' => $data['password'], // di-hash oleh cast
+            ]);
 
-        // Buat patient profile setelah registrasi
-        $patient = Patient::create([
-            'name' => $data['name'],
-            'user_id' => $user->id,
-        ]);
+            $user->refresh(); // muat nilai default DB (mis. is_admin) agar sama dengan response login
+
+            // Buat patient profile setelah registrasi
+            $patient = $user->patient()->create([
+                'name' => $data['name'],
+                'date_of_birth' => $data['date_of_birth'] ?? null,
+                'gender' => $data['gender'] ?? null,
+                'phone_number' => $data['phone_number'] ?? null,
+            ]);
+
+            return [$user, $patient];
+        });
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'user' => $user,
-            'patient' => $patient, // Tambah patient di response
+            'patient' => $patient,
             'token' => $token,
             'token_type' => 'Bearer',
         ], 201);
@@ -75,5 +88,36 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
         return response()->json(['message' => 'Logged out']);
     }
-}
 
+    /**
+     * Cabut semua token user (logout dari semua perangkat).
+     */
+    public function logoutAll(Request $request)
+    {
+        $request->user()->tokens()->delete();
+
+        return response()->json(['message' => 'Logged out from all devices']);
+    }
+
+    /**
+     * Hapus akun permanen (wajib untuk App Store / Google Play).
+     */
+    public function destroyAccount(Request $request, AccountDeletion $deletion)
+    {
+        $data = $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($data['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Password salah.'],
+            ]);
+        }
+
+        $deletion->delete($user);
+
+        return response()->json(['message' => 'Akun berhasil dihapus.']);
+    }
+}

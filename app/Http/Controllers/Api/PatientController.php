@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Patient;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
     public function show(Request $request)
     {
-        $user = $request->user();
-        $patient = $user->patient;
+        $patient = $request->user()->patient;
 
         if (! $patient) {
             return response()->json([
@@ -40,12 +38,11 @@ class PatientController extends Controller
             'phone_number' => 'nullable|string|max:15',
         ]);
 
-        $patient = Patient::create([
+        $patient = $user->patient()->create([
             'name' => $data['name'],
             'date_of_birth' => $data['date_of_birth'] ?? null,
             'gender' => $data['gender'] ?? null,
             'phone_number' => $data['phone_number'] ?? null,
-            'user_id' => $user->id,
         ]);
 
         return response()->json([
@@ -56,8 +53,7 @@ class PatientController extends Controller
 
     public function update(Request $request)
     {
-        $user = $request->user();
-        $patient = $user->patient;
+        $patient = $request->user()->patient;
 
         if (! $patient) {
             return response()->json([

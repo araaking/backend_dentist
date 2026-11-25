@@ -1,61 +1,109 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Backend Dentist (TMD Self-Diagnosis)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi Laravel 12 untuk diagnosis mandiri gangguan sendi rahang (TMD):
 
-## About Laravel
+- **Web (Blade)**: registrasi/login pasien, formulir self-diagnosis, riwayat, dan dashboard admin.
+- **API JSON** (`/api`, Laravel Sanctum, token Bearer) untuk aplikasi mobile Flutter. Dokumentasi: [docs/API.md](docs/API.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Data yang diproses adalah **data kesehatan**. Foto bukaan mulut (E2) disimpan di disk privat dan hanya dapat diakses pemilik atau admin.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Kebutuhan
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP **>= 8.3** (ekstensi: `fileinfo`, `mbstring`, `pdo_mysql`/`pdo_sqlite`, `openssl`, `ctype`, `json`, `tokenizer`, `xml`)
+- Composer 2
+- MySQL/MariaDB (atau SQLite untuk pengembangan/test)
+- Node.js (opsional, hanya jika memakai Vite)
 
-## Learning Laravel
+## Setup lokal
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+# sesuaikan DB_* di .env, lalu:
+php artisan migrate --seed
+php artisan serve
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+`--seed` mengisi tabel `questions` dan (hanya di environment `local`/`testing`) membuat user uji `test@example.com` / `password`.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Menjalankan test (Pest, SQLite in-memory):
 
-## Laravel Sponsors
+```bash
+php artisan test
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Admin
 
-### Premium Partners
+Admin ditentukan oleh kolom `users.is_admin` (bukan lagi email tertentu). Tidak ada promosi otomatis.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+# Jadikan user yang sudah ada sebagai admin
+php artisan app:make-admin email@contoh.com
 
-## Contributing
+# Cabut hak admin (mis. akun squatter / mantan admin)
+php artisan app:make-admin email@contoh.com --revoke
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Buat user admin baru (beserta profil pasien); password ditanyakan secara interaktif
+php artisan app:make-admin admin@contoh.com --create --name="Administrator"
+# atau non-interaktif (password akan tersimpan di shell history, hati-hati):
+php artisan app:make-admin admin@contoh.com --create --password='...'
+```
 
-## Code of Conduct
+## Checklist deploy production
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Environment** (`.env`):
+   - `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://...`
+   - `LOG_LEVEL=warning`
+   - `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`
+   - `SANCTUM_EXPIRATION=43200` (menit; token API kedaluwarsa 30 hari)
+   - Kredensial database khusus dengan password kuat
+2. **Dependensi & cache**:
+   ```bash
+   composer install --no-dev --optimize-autoloader
+   php artisan optimize
+   ```
+3. **Migrasi**: `php artisan migrate --force`
+   (menambah `users.is_admin` dan `answers.type`).
+4. **Seed master pertanyaan** (aman diulang, tidak membuat user uji di production):
+   `php artisan db:seed --class=QuestionSeeder --force`
+5. **Periksa akun admin palsu SEBELUM membuat admin.** Versi lama menjadikan siapa pun yang mendaftar dengan `admin@dentist.com` sebagai admin.
+   Cek apakah akun itu (atau akun tak dikenal lain) didaftarkan orang lain:
+   ```bash
+   php artisan tinker --execute="App\Models\User::where('email','admin@dentist.com')->first()"
+   ```
+   Jika akun tersebut bukan milik Anda (squatter): hapus akunnya (`User::where('email','admin@dentist.com')->delete()` di tinker) atau
+   cukup gunakan email admin lain; jika sudah terlanjur memiliki hak admin, cabut dengan `php artisan app:make-admin email --revoke`.
+6. **Buat admin pertama**: `php artisan app:make-admin email@anda.com [--create]`
+   (cabut hak admin: `php artisan app:make-admin email@anda.com --revoke`).
+7. **Pindahkan foto lama ke disk privat** (jika sebelumnya foto tersimpan publik):
+   ```bash
+   php artisan app:migrate-consultation-photos
+   ```
+   Perintah ini idempotent dan melaporkan jumlah file yang dipindahkan. Setelah itu hapus symlink `public/storage`
+   bila tidak dipakai untuk hal lain (`php artisan storage:link` tidak diperlukan oleh aplikasi ini).
+   Foto kini disimpan di `storage/app/private/consultation_photos` -- **sertakan folder ini dalam backup**.
+8. **Scheduler** (membersihkan token Sanctum kedaluwarsa setiap hari). Tambahkan cron:
+   ```cron
+   * * * * * cd /path/ke/aplikasi && php artisan schedule:run >> /dev/null 2>&1
+   ```
+9. **Web server**: arahkan document root ke `public/`, paksa HTTPS, dan pastikan `storage/` & `bootstrap/cache/` dapat ditulis.
+10. **Rate limiting**: login (5/menit per email+IP dan 20/menit per IP), register (10/jam per IP) sudah aktif. Jika di belakang proxy/load balancer,
+   konfigurasikan trusted proxies agar IP klien terbaca benar.
+11. Pastikan cache/queue/session driver sesuai infrastruktur (default `database`; jalankan `php artisan migrate` agar tabelnya ada).
 
-## Security Vulnerabilities
+## Struktur singkat
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Lokasi | Fungsi |
+| --- | --- |
+| `app/Support/TmdQuestionnaire.php` | Sumber tunggal definisi kuesioner SQ/E1-E4 (API, web, validasi, seeder) |
+| `app/Services/TmdDiagnosisService.php` | Logika diagnosis (fungsi murni) |
+| `app/Services/ConsultationRecorder.php` | Penyimpanan konsultasi (transaksi) dipakai API & web |
+| `app/Services/ConsultationPhotoStorage.php` | Validasi & penyimpanan foto (disk privat) |
+| `app/Policies/ConsultationPolicy.php` | Otorisasi lihat konsultasi/foto (pemilik atau admin) |
+| `docs/API.md` | Dokumentasi API untuk developer mobile |
 
-## License
+## Catatan klinis
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Aturan diagnosis bersifat saling eksklusif dan berurutan (Myalgia, Arthralgia, HA-TMD, Joint-related TMD). Ini keputusan klinis yang
+perlu dikonfirmasi dengan pakar; lihat komentar di `TmdDiagnosisService`. Hasil aplikasi bukan pengganti pemeriksaan dokter gigi.

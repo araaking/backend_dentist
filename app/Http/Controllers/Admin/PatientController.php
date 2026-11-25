@@ -17,14 +17,18 @@ class PatientController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = trim((string) $request->query('search', ''));
+
         $patients = Patient::with('user')
             ->withCount('consultations')
+            ->search($search)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('admin.patients.index', compact('patients'));
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('admin.patients.index', compact('patients', 'search'));
     }
 
     /**

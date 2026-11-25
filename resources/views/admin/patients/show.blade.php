@@ -37,11 +37,11 @@
             </div>
             <div>
                 <p class="text-sm text-gray-600">Tanggal Lahir</p>
-                <p class="font-medium text-gray-800">{{ \Carbon\Carbon::parse($patient->date_of_birth)->format('d/m/Y') }}</p>
+                <p class="font-medium text-gray-800">{{ $patient->birth_date_label }}</p>
             </div>
             <div>
                 <p class="text-sm text-gray-600">Jenis Kelamin</p>
-                <p class="font-medium text-gray-800">{{ $patient->gender == 'male' ? 'Laki-laki' : 'Perempuan' }}</p>
+                <p class="font-medium text-gray-800">{{ $patient->gender_label }}</p>
             </div>
             <div>
                 <p class="text-sm text-gray-600">Nomor Telepon</p>
@@ -171,7 +171,7 @@
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h3 class="text-lg font-medium text-gray-800">
-                                Konsultasi - {{ \Carbon\Carbon::parse($consultation->consultation_date)->format('d/m/Y') }}
+                                Konsultasi - {{ $consultation->consultation_date->format('d/m/Y') }}
                             </h3>
                             <p class="text-sm text-gray-500">ID: {{ $consultation->id }}</p>
                         </div>
@@ -191,6 +191,16 @@
                     @if($consultation->notes)
                         <div class="mb-3">
                             <p class="text-sm text-gray-600"><strong>Catatan:</strong> {{ $consultation->notes }}</p>
+                        </div>
+                    @endif
+
+                    <!-- Foto E2 (disajikan lewat route yang memeriksa otorisasi) -->
+                    @if($consultation->photoPath())
+                        <div class="mb-3">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Foto Mulut Terbuka:</h4>
+                            <a href="{{ route('consultations.photo', $consultation) }}" target="_blank" rel="noopener">
+                                <img src="{{ route('consultations.photo', $consultation) }}" alt="Foto Mulut Terbuka" class="w-32 h-32 object-cover rounded-lg shadow">
+                            </a>
                         </div>
                     @endif
 

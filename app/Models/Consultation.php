@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\ConsultationPhotoStorage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,13 +16,11 @@ class Consultation extends Model
         'notes',
     ];
 
-    protected $dates = [
-        'consultation_date',
-    ];
-
-    public function getConsultationDateAttribute($value)
+    protected function casts(): array
     {
-        return \Carbon\Carbon::parse($value);
+        return [
+            'consultation_date' => 'datetime',
+        ];
     }
 
     public function patient()
@@ -42,5 +41,31 @@ class Consultation extends Model
     public function diagnoses()
     {
         return $this->hasMany(Diagnosis::class);
+    }
+
+    /**
+     * Path foto E2 pada disk privat, atau null bila tidak ada / path tidak aman.
+     * Memakai relasi `answers` (di-load bila belum).
+     */
+    public function photoPath(): ?string
+    {
+        $answer = $this->answers->firstWhere('question_code', 'E2');
+        if (! $answer) {
+            return null;
+        }
+
+        $data = json_decode((string) $answer->answer, true);
+        $path = is_array($data) ? ($data['photo_path'] ?? null) : null;
+
+        return ConsultationPhotoStorage::isValidPath($path) ? $path : null;
+    }
+
+    /** Nilai bukaan mulut (mm) dari jawaban E2, atau null. */
+    public function openingMm(): int|float|string|null
+    {
+        $answer = $this->answers->firstWhere('question_code', 'E2');
+        $data = $answer ? json_decode((string) $answer->answer, true) : null;
+
+        return is_array($data) ? ($data['opening_mm'] ?? null) : null;
     }
 }

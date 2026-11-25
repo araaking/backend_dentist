@@ -15,4 +15,11 @@ class Question extends Model
         'type',
         'options',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'options' => 'array',
+        ];
+    }
 }

@@ -24,12 +24,20 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     * (is_admin tidak mass-assignable, jadi dipasang lewat afterMaking/afterCreating.)
+     */
+    public function admin(): static
+    {
+        return $this->afterMaking(fn ($user) => $user->forceFill(['is_admin' => true]));
     }
 
     /**

@@ -4,25 +4,23 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class AdminMiddleware
 {
     /**
-     * Handle an incoming request.
+     * Hanya user dengan flag is_admin (Gate `admin`) yang boleh lewat.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
-     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if user is authenticated and is admin
-        if (Auth::check() && Auth::user()->email === 'admin@dentist.com') {
+        $user = $request->user();
+
+        if ($user && Gate::forUser($user)->allows('admin')) {
             return $next($request);
         }
 
-        // Redirect to regular dashboard with error message
-        return redirect()->route('dashboard')->with('error', 'Access denied. Admin privileges required.');
+        return redirect()->route('dashboard')->with('error', 'Akses ditolak. Hanya admin yang dapat membuka halaman tersebut.');
     }
 }
