@@ -18,7 +18,7 @@ final class TmdQuestionnaire
 
     public const E2_MAX_OPENING_MM = 100;
 
-    /** Opsi SQ3 (sifat nyeri). Keduanya dihitung "ada nyeri" pada diagnosis. */
+    /** Opsi SQ3 (sifat nyeri). Disimpan, tetapi tidak dipakai oleh diagnosis (tidak ada di bagan bDC/TMD). */
     public const SQ3_PERSISTENT = 'Persisten (terus-menerus)';
 
     public const SQ3_RECURRENT = 'Kambuhan (hilang timbul)';

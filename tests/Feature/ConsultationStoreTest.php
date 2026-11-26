@@ -2,7 +2,9 @@
 
 use App\Models\Answer;
 use App\Models\Consultation;
+use App\Models\Diagnosis;
 use App\Models\Question;
+use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
@@ -84,7 +86,7 @@ it('rejects invalid SQ option values and out of range scores with 422', function
 it('keeps the original store response keys and diagnoses a consultation', function () {
     Sanctum::actingAs(makeUser());
 
-    $payload = consultationPayload(['sq' => ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Kambuhan (hilang timbul)', 'SQ4' => 'Ya'], 'eq' => ['E1' => ['Masseter' => 2]]]);
+    $payload = consultationPayload(['sq' => ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Kambuhan (hilang timbul)', 'SQ4' => 'Ya'], 'eq' => ['E1' => ['Masseter' => 2], 'E4' => ['Masseter' => 2]]]);
 
     $this->postJson('/api/consultations', $payload)
         ->assertCreated()
@@ -93,15 +95,71 @@ it('keeps the original store response keys and diagnoses a consultation', functi
         ->assertJsonPath('diagnoses', ['Myalgia']);
 });
 
-it('stores the fallback diagnosis and does not count an empty opening_mm as limited opening', function () {
-    $user = makeUser();
-    Sanctum::actingAs($user);
+it('stores the fallback diagnosis when no criteria are met', function () {
+    Sanctum::actingAs(makeUser());
 
-    $payload = consultationPayload(['sq' => ['SQ9' => 'Ya'], 'eq' => ['E2' => ['opening_mm' => '']]]);
+    $this->postJson('/api/consultations', consultationPayload(['sq' => ['SQ9' => 'Ya']]))
+        ->assertCreated()
+        ->assertJsonPath('diagnoses', ['No specific TMD diagnosis found.']);
+});
+
+it('never gives Acute closed lock when opening_mm is empty', function () {
+    Sanctum::actingAs(makeUser());
+
+    $payload = consultationPayload(['sq' => ['SQ9' => 'Ya', 'SQ10' => 'Ya', 'SQ12' => 'Ya'], 'eq' => ['E2' => ['opening_mm' => '']]]);
 
     $this->postJson('/api/consultations', $payload)
         ->assertCreated()
-        ->assertJsonPath('diagnoses', ['No specific TMD diagnosis found.']);
+        ->assertJsonPath('diagnoses', ['Other Disc-based TMD']);
+});
+
+it('stores and returns several diagnoses in the fixed order', function () {
+    Sanctum::actingAs(makeUser());
+
+    $payload = consultationPayload([
+        'sq' => ['SQ1' => 'Ya', 'SQ4' => 'Ya', 'SQ5' => 'Ya', 'SQ9' => 'Ya', 'SQ10' => 'Ya', 'SQ12' => 'Ya', 'SQ13' => 'Ya', 'SQ14' => 'Ya'],
+        'eq' => ['E1' => ['TMJ' => 1], 'E2' => ['opening_mm' => 30], 'E4' => ['Temporalis' => 1, 'Masseter' => 1, 'TMJ' => 1]],
+    ]);
+    $expected = ['Myalgia', 'Arthralgia', 'Headache attributed to TMD (HA-TMD)', 'Acute closed lock', 'Subluxation'];
+
+    $id = $this->postJson('/api/consultations', $payload)
+        ->assertCreated()
+        ->assertJsonPath('diagnoses', $expected)
+        ->json('consultation_id');
+
+    expect(Consultation::with('diagnoses')->findOrFail($id)->diagnoses->pluck('name')->all())->toBe($expected);
+
+    $this->getJson("/api/consultations/$id")
+        ->assertOk()
+        ->assertJsonPath('consultation.diagnoses.*.name', $expected);
+
+    $this->getJson('/api/consultations')
+        ->assertOk()
+        ->assertJsonPath('consultations.0.diagnoses.*.name', $expected);
+});
+
+it('shows several diagnoses with descriptions on the web result page', function () {
+    $user = makeUser();
+    $consultation = makeConsultation($user->patient, false, [
+        'sq' => ['SQ1' => 'Ya', 'SQ4' => 'Ya', 'SQ13' => 'Ya', 'SQ14' => 'Ya'],
+        'eq' => ['E1' => ['Masseter' => 1], 'E4' => ['Masseter' => 1, 'TMJ' => 1], 'E3' => 'Kliking'],
+    ]);
+
+    $response = $this->actingAs($user)->get(route('consultations.show', $consultation))->assertOk();
+
+    foreach (['Myalgia', 'Arthralgia', 'Other Disc-based TMD', 'Subluxation'] as $name) {
+        $response->assertSee($name)->assertSee(Diagnosis::DESCRIPTIONS[$name]);
+    }
+    $response->assertDontSee('Tidak ada deskripsi.')->assertDontSee('tidak ditemukan diagnosis spesifik');
+});
+
+it('shows the info box on the web result page when there is no diagnosis', function () {
+    $user = makeUser();
+    $consultation = makeConsultation($user->patient);
+
+    $this->actingAs($user)->get(route('consultations.show', $consultation))
+        ->assertOk()
+        ->assertSee('tidak ditemukan diagnosis spesifik');
 });
 
 it('stores a web consultation through the shared validation and service', function () {
@@ -116,7 +174,7 @@ it('stores a web consultation through the shared validation and service', functi
 
     $consultation = Consultation::with('diagnoses')->firstOrFail();
 
-    expect($consultation->diagnoses->pluck('name')->all())->toBe(['Joint-related TMD']);
+    expect($consultation->diagnoses->pluck('name')->all())->toBe(['Other Disc-based TMD']);
     expect($consultation->photoPath())->not->toBeNull();
     Storage::disk('local')->assertExists($consultation->photoPath());
 });
@@ -258,7 +316,7 @@ it('makes a user admin with app:make-admin and can create one', function () {
     $this->artisan('app:make-admin', ['email' => 'baru@example.com'])->assertFailed();
 
     $this->artisan('app:make-admin', ['email' => 'baru@example.com', '--create' => true, '--password' => 'rahasia-123'])->assertSuccessful();
-    $created = \App\Models\User::where('email', 'baru@example.com')->firstOrFail();
+    $created = User::where('email', 'baru@example.com')->firstOrFail();
     expect($created->is_admin)->toBeTrue();
     expect($created->patient)->not->toBeNull();
 });

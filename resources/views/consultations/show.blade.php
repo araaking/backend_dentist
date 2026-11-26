@@ -27,7 +27,7 @@
             
             <h2 class="text-2xl font-semibold mb-4 border-b pb-2">Diagnosis yang Ditemukan</h2>
             
-            @if($consultation->diagnoses->isEmpty() || $consultation->diagnoses->first()->name === 'No specific TMD diagnosis found.')
+            @if($consultation->diagnoses->isEmpty() || $consultation->diagnoses->first()->name === \App\Services\TmdDiagnosisService::NONE)
                 <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4" role="alert">
                     <p class="font-bold">Informasi</p>
                     <p>Berdasarkan jawaban Anda, tidak ditemukan diagnosis spesifik terkait Temporomandibular Disorders (TMD). Jika Anda masih merasakan gejala, disarankan untuk berkonsultasi dengan dokter gigi spesialis.</p>

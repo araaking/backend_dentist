@@ -210,8 +210,10 @@ Lihat [Mengirim konsultasi](#mengirim-konsultasi).
 }
 ```
 
+`diagnoses` berisi **satu atau lebih** nama dengan urutan tetap, mengikuti Brief DC/TMD Diagnostic Decision Tree
+(lihat [DIAGNOSIS.md](DIAGNOSIS.md)). Nama yang mungkin: `Myalgia`, `Arthralgia`, `Headache attributed to TMD (HA-TMD)`,
+`Acute closed lock` / `Degenerative joint disease` / `Other Disc-based TMD` (salah satu dari hasil jalur sendi), dan `Subluxation`.
 Bila tidak ada kriteria yang terpenuhi, `diagnoses` = `["No specific TMD diagnosis found."]`.
-Aturan diagnosis saling eksklusif (maksimal satu diagnosis): Myalgia, lalu Arthralgia, lalu HA-TMD, lalu Joint-related TMD.
 
 ### GET `/api/consultations/{id}`
 
@@ -261,7 +263,7 @@ Mengembalikan gambar (biner `image/jpeg` atau `image/png`). Lihat [Mengambil fot
 `input.type` bernilai `radio` atau `select` (SQ8). Nilai yang dikirim ke server **harus persis** salah satu `options`
 (contoh: `"< 1 minggu"`, `">= 1 minggu"`, `"< 1x/minggu"`, `">= 1x/minggu"`, `"Tidak ada"`, `"Sesekali"`, `"Sering"`).
 SQ3 (sifat nyeri) memakai opsi berurutan `"Persisten (terus-menerus)"`, `"Kambuhan (hilang timbul)"`, `"Tidak"`
-(default `"Tidak"`). Persisten dan kambuhan sama-sama dihitung "ada nyeri" pada diagnosis; nilai lama `"Ya"` tidak lagi diterima (422).
+(default `"Tidak"`). Jawaban SQ3 disimpan tetapi tidak dipakai oleh diagnosis; nilai lama `"Ya"` tidak lagi diterima (422).
 
 **EQ**:
 
@@ -282,7 +284,7 @@ SQ3 (sifat nyeri) memakai opsi berurutan `"Persisten (terus-menerus)"`, `"Kambuh
 
 | Field | Wajib | Keterangan |
 | --- | --- | --- |
-| `sq` | ya | objek `{ "SQ1": "Ya", ... }`. Tiap kode opsional (kode yang tidak dikirim memakai nilai default saat diagnosis); nilai harus salah satu `options`. |
+| `sq` | ya | objek `{ "SQ1": "Ya", ... }`. Tiap kode opsional (kode yang tidak dikirim dianggap negatif/"tidak ada gejala" oleh diagnosis); nilai harus salah satu `options`. |
 | `eq` | ya | objek: `E1`/`E4` = `{ "Temporalis": 0-3, "Masseter": 0-3, "TMJ": 0-3 }` (integer), `E2` = `{ "opening_mm": angka 0-100 }`, `E3` = salah satu opsi E3. |
 | `e2_photo` | tidak | foto base64 (JSON atau multipart). Boleh diawali `data:image/jpeg;base64,`. Maks ~7.000.000 karakter; hasil decode maks 5 MB. |
 | `e2_photo_file` | tidak | foto sebagai file multipart (`jpg`/`jpeg`/`png`, maks 5 MB). Jika `e2_photo_file` dan `e2_photo` sama-sama ada, file multipart yang dipakai. |
@@ -390,8 +392,15 @@ Perubahan perilaku dibanding API lama. Tidak ada endpoint atau key JSON yang dih
    Gunakan `e2_photo_url` + header `Authorization` ([Mengambil foto](#mengambil-foto)). `photo_path` di dalam jawaban E2 hanyalah path internal.
 6. **Format penyimpanan jawaban E1/E4/E2**: nilai skor E1/E4 kini disimpan sebagai integer (`{"TMJ":1}` bukan `{"TMJ":"1"}`) dan `opening_mm`
    sebagai angka. String `answer` tetap JSON; gunakan field `value` untuk hasil decode. Jawaban E2 hanya dibuat bila `opening_mm` atau foto ada.
-7. **`opening_mm` kosong/non-numerik tidak dihitung sebagai "<= 35 mm"** dalam diagnosis Joint-related TMD (sebelumnya string kosong dianggap <= 35).
+7. **`opening_mm` kosong/non-numerik tidak dihitung sebagai "< 35 mm"** pada diagnosis Acute closed lock (sebelumnya string kosong dianggap <= 35). Batasnya kini tegas kurang dari 35 mm.
 8. **Login/register**: `user` kini memuat field `is_admin` (boolean). Abaikan di mobile.
+9. **Logika diagnosis mengikuti Brief DC/TMD Diagnostic Decision Tree** ([DIAGNOSIS.md](DIAGNOSIS.md)).
+   `diagnoses` kini bisa berisi **beberapa** nama sekaligus (aturan lama "maksimal satu" dihapus), dengan urutan tetap:
+   Myalgia, Arthralgia, HA-TMD, hasil jalur sendi, Subluxation. Fallback `["No specific TMD diagnosis found."]` tidak berubah.
+   Nama baru: `Acute closed lock`, `Degenerative joint disease`, `Other Disc-based TMD`, `Subluxation`.
+   `Joint-related TMD` **tidak lagi dihasilkan**, tetapi masih bisa muncul pada riwayat konsultasi lama (tidak didiagnosis ulang);
+   tampilkan sebagai nama biasa. Tiga nama pertama dan fallback tidak berubah. SQ2, SQ3, SQ6 tidak lagi memengaruhi diagnosis.
+   Myalgia kini membutuhkan nyeri tekan otot pada E4 (bukan hanya E1).
 
 ### Penambahan (aditif)
 

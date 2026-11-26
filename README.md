@@ -112,5 +112,5 @@ php artisan app:make-admin admin@contoh.com --create --password='...'
 
 ## Catatan klinis
 
-Aturan diagnosis bersifat saling eksklusif dan berurutan (Myalgia, Arthralgia, HA-TMD, Joint-related TMD). Ini keputusan klinis yang
-perlu dikonfirmasi dengan pakar; lihat komentar di `TmdDiagnosisService`. Hasil aplikasi bukan pengganti pemeriksaan dokter gigi.
+Aturan diagnosis mengikuti Brief DC/TMD Diagnostic Decision Tree (satu konsultasi bisa memiliki beberapa diagnosis); lihat
+[`docs/DIAGNOSIS.md`](docs/DIAGNOSIS.md) dan `TmdDiagnosisService`. Hasil aplikasi bukan pengganti pemeriksaan dokter gigi.

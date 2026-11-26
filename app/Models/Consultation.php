@@ -40,7 +40,9 @@ class Consultation extends Model
 
     public function diagnoses()
     {
-        return $this->hasMany(Diagnosis::class);
+        // Urutan diagnosis bermakna (yang pertama dianggap utama); `id` satu-satunya kunci yang andal
+        // karena semua baris satu konsultasi memiliki timestamp yang sama.
+        return $this->hasMany(Diagnosis::class)->orderBy('id');
     }
 
     /**
