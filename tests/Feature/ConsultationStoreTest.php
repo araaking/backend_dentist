@@ -63,6 +63,10 @@ it('rejects invalid SQ option values and out of range scores with 422', function
     $this->postJson('/api/consultations', $bad)->assertStatus(422)->assertJsonValidationErrors('sq.SQ1');
 
     $bad = consultationPayload();
+    $bad['sq']['SQ3'] = 'Ya'; // nilai lama SQ3 sudah diganti Persisten/Kambuhan
+    $this->postJson('/api/consultations', $bad)->assertStatus(422)->assertJsonValidationErrors('sq.SQ3');
+
+    $bad = consultationPayload();
     $bad['eq']['E1']['TMJ'] = 7;
     $this->postJson('/api/consultations', $bad)->assertStatus(422)->assertJsonValidationErrors('eq.E1.TMJ');
 
@@ -80,7 +84,7 @@ it('rejects invalid SQ option values and out of range scores with 422', function
 it('keeps the original store response keys and diagnoses a consultation', function () {
     Sanctum::actingAs(makeUser());
 
-    $payload = consultationPayload(['sq' => ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Ya', 'SQ4' => 'Ya'], 'eq' => ['E1' => ['Masseter' => 2]]]);
+    $payload = consultationPayload(['sq' => ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Kambuhan (hilang timbul)', 'SQ4' => 'Ya'], 'eq' => ['E1' => ['Masseter' => 2]]]);
 
     $this->postJson('/api/consultations', $payload)
         ->assertCreated()
@@ -174,6 +178,7 @@ it('returns the same questions JSON structure as the legacy api', function () {
         'input' => ['type' => 'radio', 'options' => ['Ya', 'Tidak'], 'default' => 'Tidak'],
     ]);
     expect($json['sq'][1]['input'])->toBe(['type' => 'radio', 'options' => ['< 1 minggu', '>= 1 minggu'], 'default' => '< 1 minggu']);
+    expect($json['sq'][2]['input'])->toBe(['type' => 'radio', 'options' => ['Persisten (terus-menerus)', 'Kambuhan (hilang timbul)', 'Tidak'], 'default' => 'Tidak']);
     expect($json['sq'][5]['input']['options'])->toBe(['< 1x/minggu', '>= 1x/minggu', 'Tidak']);
     expect($json['sq'][7]['input'])->toBe(['type' => 'select', 'options' => ['Tidak ada', 'Sesekali', 'Sering'], 'default' => 'Tidak ada']);
 

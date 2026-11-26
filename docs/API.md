@@ -260,6 +260,8 @@ Mengembalikan gambar (biner `image/jpeg` atau `image/png`). Lihat [Mengambil fot
 
 `input.type` bernilai `radio` atau `select` (SQ8). Nilai yang dikirim ke server **harus persis** salah satu `options`
 (contoh: `"< 1 minggu"`, `">= 1 minggu"`, `"< 1x/minggu"`, `">= 1x/minggu"`, `"Tidak ada"`, `"Sesekali"`, `"Sering"`).
+SQ3 (sifat nyeri) memakai opsi berurutan `"Persisten (terus-menerus)"`, `"Kambuhan (hilang timbul)"`, `"Tidak"`
+(default `"Tidak"`). Persisten dan kambuhan sama-sama dihitung "ada nyeri" pada diagnosis; nilai lama `"Ya"` tidak lagi diterima (422).
 
 **EQ**:
 
@@ -297,7 +299,7 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "sq": { "SQ1": "Ya", "SQ2": ">= 1 minggu", "SQ3": "Ya", "SQ4": "Ya", "SQ5": "Tidak", "SQ6": "Tidak", "SQ7": "Tidak",
+  "sq": { "SQ1": "Ya", "SQ2": ">= 1 minggu", "SQ3": "Persisten (terus-menerus)", "SQ4": "Ya", "SQ5": "Tidak", "SQ6": "Tidak", "SQ7": "Tidak",
           "SQ8": "Tidak ada", "SQ9": "Tidak", "SQ10": "Tidak", "SQ11": "Tidak", "SQ12": "Tidak", "SQ13": "Tidak", "SQ14": "Tidak" },
   "eq": {
     "E1": { "Temporalis": 1, "Masseter": 0, "TMJ": 0 },

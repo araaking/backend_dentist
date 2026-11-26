@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Support\TmdQuestionnaire;
+
 /**
  * Logika diagnosis TMD (fungsi murni: jawaban masuk, daftar nama diagnosis keluar).
  *
@@ -38,7 +40,7 @@ class TmdDiagnosisService
         if (
             ($sq['SQ1'] ?? 'Tidak') === 'Ya' &&
             ($sq['SQ2'] ?? '< 1 minggu') === '>= 1 minggu' &&
-            ($sq['SQ3'] ?? 'Tidak') === 'Ya' &&
+            $this->hasPainPattern($sq['SQ3'] ?? 'Tidak') &&
             ($sq['SQ4'] ?? 'Tidak') === 'Ya' &&
             (
                 $this->score($eq, 'E1', 'Temporalis') >= 1 ||
@@ -113,6 +115,15 @@ class TmdDiagnosisService
         }
 
         return $diagnoses === [] ? [self::NONE] : array_values(array_unique($diagnoses));
+    }
+
+    /**
+     * SQ3: nyeri persisten maupun kambuhan sama-sama memenuhi kriteria
+     * (urutan opsi tidak memengaruhi hasil diagnosis).
+     */
+    private function hasPainPattern(mixed $value): bool
+    {
+        return in_array($value, [TmdQuestionnaire::SQ3_PERSISTENT, TmdQuestionnaire::SQ3_RECURRENT], true);
     }
 
     /**

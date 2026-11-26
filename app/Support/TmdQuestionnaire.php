@@ -18,6 +18,11 @@ final class TmdQuestionnaire
 
     public const E2_MAX_OPENING_MM = 100;
 
+    /** Opsi SQ3 (sifat nyeri). Keduanya dihitung "ada nyeri" pada diagnosis. */
+    public const SQ3_PERSISTENT = 'Persisten (terus-menerus)';
+
+    public const SQ3_RECURRENT = 'Kambuhan (hilang timbul)';
+
     /** Area pemeriksaan untuk E1 dan E4. */
     public const AREAS = ['Temporalis', 'Masseter', 'TMJ'];
 
@@ -45,7 +50,6 @@ final class TmdQuestionnaire
      */
     public const WEB_OPTION_LABELS = [
         'SQ2' => ['< 1 minggu' => 'Kurang dari 1 minggu', '>= 1 minggu' => '1 minggu atau lebih'],
-        'SQ3' => ['Ya' => 'Ya (Persisten/Kambuhan)'],
         'SQ6' => ['< 1x/minggu' => 'Kurang dari 1x/minggu', '>= 1x/minggu' => '1x/minggu atau lebih'],
     ];
 
@@ -61,7 +65,7 @@ final class TmdQuestionnaire
         return [
             'SQ1' => ['text' => 'Apakah Anda merasakan nyeri di rahang, pelipis, atau telinga?', 'type' => 'radio', 'options' => $yesNo, 'default' => 'Tidak'],
             'SQ2' => ['text' => 'Berapa lama nyeri di rahang/pelipis/telinga berlangsung? (Jawaban: < 1 minggu atau >= 1 minggu)', 'type' => 'radio', 'options' => ['< 1 minggu', '>= 1 minggu'], 'default' => '< 1 minggu'],
-            'SQ3' => ['text' => 'Bagaimana sifat nyeri? Apakah persisten atau kambuhan?', 'type' => 'radio', 'options' => $yesNo, 'default' => 'Tidak'],
+            'SQ3' => ['text' => 'Bagaimana sifat nyeri? Apakah persisten atau kambuhan?', 'type' => 'radio', 'options' => [self::SQ3_PERSISTENT, self::SQ3_RECURRENT, 'Tidak'], 'default' => 'Tidak'],
             'SQ4' => ['text' => 'Apakah aktivitas (mengunyah makanan keras, membuka mulut lebar, kebiasaan rahang, aktivitas rahang lain) memengaruhi rasa sakit?', 'type' => 'radio', 'options' => $yesNo, 'default' => 'Tidak'],
             'SQ5' => ['text' => 'Apakah Anda mengalami sakit kepala di pelipis?', 'type' => 'radio', 'options' => $yesNo, 'default' => 'Tidak'],
             'SQ6' => ['text' => 'Berapa lama sakit kepala itu berlangsung? (Jawaban: < 1x/minggu atau >= 1x/minggu)', 'type' => 'radio', 'options' => ['< 1x/minggu', '>= 1x/minggu', 'Tidak'], 'default' => 'Tidak'],

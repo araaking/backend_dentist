@@ -18,7 +18,7 @@ function diag(array $sq = [], array $eq = []): array
     );
 }
 
-$myalgiaSq = ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Ya', 'SQ4' => 'Ya'];
+$myalgiaSq = ['SQ1' => 'Ya', 'SQ2' => '>= 1 minggu', 'SQ3' => 'Persisten (terus-menerus)', 'SQ4' => 'Ya'];
 
 it('diagnoses Myalgia from temporalis/masseter pain on E1', function () use ($myalgiaSq) {
     expect(diag($myalgiaSq, ['E1' => ['Temporalis' => 1]]))->toBe(['Myalgia']);
@@ -34,6 +34,13 @@ it('does not diagnose Myalgia without muscle pain or with SQ2 < 1 week', functio
     expect(diag($myalgiaSq))->toBe([TmdDiagnosisService::NONE]);
     expect(diag(array_replace($myalgiaSq, ['SQ2' => '< 1 minggu']), ['E1' => ['Temporalis' => 2]]))
         ->not->toContain('Myalgia');
+});
+
+it('treats persistent and recurrent SQ3 pain the same', function () use ($myalgiaSq) {
+    $eq = ['E1' => ['Masseter' => 1]];
+    expect(diag(array_replace($myalgiaSq, ['SQ3' => 'Persisten (terus-menerus)']), $eq))->toBe(['Myalgia']);
+    expect(diag(array_replace($myalgiaSq, ['SQ3' => 'Kambuhan (hilang timbul)']), $eq))->toBe(['Myalgia']);
+    expect(diag(array_replace($myalgiaSq, ['SQ3' => 'Tidak']), $eq))->not->toContain('Myalgia');
 });
 
 it('diagnoses Arthralgia from TMJ pain', function () {
