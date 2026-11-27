@@ -572,10 +572,8 @@
 
         .photo-img {
             width: 100%;
-            max-width: 22rem;
+            max-width: 26rem;
             height: auto;
-            max-height: 18rem;
-            object-fit: cover;
             display: block;
             border-radius: var(--radius-nested);
             outline: 1px solid rgba(0, 0, 0, 0.1);

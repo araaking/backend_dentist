@@ -2062,7 +2062,8 @@
 
             let faceLandmarkerPromise = null;
             let estimateRunId = 0;
-            let measurement = null; // { mmPerPx, naturalHeight, xCenter, topNorm, bottomNorm, initTopNorm, initBottomNorm, estimatedMm, rollDeg }
+            let measurement = null; // { mmPerPx, naturalHeight, xCenter, mouthHalfW, topNorm, bottomNorm, initTopNorm, initBottomNorm, estimatedMm, rollDeg }
+            let photoAlreadyAnnotated = Boolean(hiddenPhotoInput.value);
 
             function setPhotoStatus(text, loading) {
                 photoStatusText.textContent = text;
@@ -2149,7 +2150,8 @@
                 const topPx = measurement.topNorm * stageH;
                 const bottomPx = measurement.bottomNorm * stageH;
                 const spanPx = Math.max(0, bottomPx - topPx);
-                const axisX = clamp(measurement.xCenter, 0.2, 0.8) * stageW;
+                const halfW = (measurement.mouthHalfW || 0.14) * stageW;
+                const caliperX = clamp(measurement.xCenter * stageW + halfW + 10, stageW * 0.22, stageW - 44);
 
                 handleTop.style.transform = 'translateY(' + topPx + 'px)';
                 handleBottom.style.transform = 'translateY(' + bottomPx + 'px)';
@@ -2159,7 +2161,7 @@
                 measureBand.style.transform = 'translateY(' + topPx + 'px)';
                 measureBand.style.height = spanPx + 'px';
 
-                measureAxis.style.left = axisX + 'px';
+                measureAxis.style.left = caliperX + 'px';
                 measureAxis.style.transform = 'translateY(' + topPx + 'px)';
                 measureAxis.style.height = spanPx + 'px';
 
@@ -2168,7 +2170,7 @@
 
                 const readoutText = '~' + estMm + ' mm';
                 measureReadout.textContent = readoutText;
-                measureReadout.style.left = axisX + 'px';
+                measureReadout.style.left = clamp(caliperX, 46, stageW - 46) + 'px';
                 measureReadout.style.top = (topPx + spanPx / 2) + 'px';
 
                 estimateBadge.textContent = 'Estimasi foto: ' + readoutText;
@@ -2331,11 +2333,15 @@
                     const rawTop = clamp(Math.min(lm[13].y, lm[14].y), 0.05, 0.92);
                     const rawBottom = clamp(Math.max(lm[13].y, lm[14].y), rawTop + 0.01, 0.96);
                     const xCenter = clamp((lm[13].x + lm[14].x) / 2, 0.2, 0.8);
+                    const mouthHalfW = (lm[61] && lm[291])
+                        ? clamp(Math.abs(lm[291].x - lm[61].x) / 2, 0.08, 0.28)
+                        : 0.14;
 
                     measurement = {
                         mmPerPx: mmPerPx,
                         naturalHeight: h,
                         xCenter: xCenter,
+                        mouthHalfW: mouthHalfW,
                         topNorm: rawTop,
                         bottomNorm: rawBottom,
                         initTopNorm: rawTop,
@@ -2592,6 +2598,7 @@
                 clearPhotoBtn.hidden = false;
                 startCameraLabel.textContent = 'Ambil ulang';
                 setPhotoError('');
+                photoAlreadyAnnotated = false;
                 isDirty = true;
                 stopCameraStream();
                 runOpeningEstimation(true);
@@ -2629,6 +2636,7 @@
                 photoPreview.src = previewObjectUrl;
                 photoPreviewContainer.classList.add('is-visible');
                 clearPhotoBtn.hidden = false;
+                photoAlreadyAnnotated = false;
                 isDirty = true;
                 runOpeningEstimation(true);
             });
@@ -2650,6 +2658,165 @@
                 setPhotoError('');
             });
 
+            function drawRoundedRect(ctx, x, y, width, height, radius) {
+                const r = Math.min(radius, width / 2, height / 2);
+                ctx.beginPath();
+                ctx.moveTo(x + r, y);
+                ctx.arcTo(x + width, y, x + width, y + height, r);
+                ctx.arcTo(x + width, y + height, x, y + height, r);
+                ctx.arcTo(x, y + height, x, y, r);
+                ctx.arcTo(x, y, x + width, y, r);
+                ctx.closePath();
+            }
+
+            function renderAnnotatedPhotoDataUrl() {
+                if (!photoPreview || !photoPreview.complete || !photoPreview.naturalWidth || !photoPreview.naturalHeight) {
+                    return null;
+                }
+
+                const nw = photoPreview.naturalWidth;
+                const nh = photoPreview.naturalHeight;
+                const maxDim = 960;
+                const scale = Math.max(nw, nh) > maxDim ? (maxDim / Math.max(nw, nh)) : 1;
+                const w = Math.round(nw * scale);
+                const h = Math.round(nh * scale);
+
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(photoPreview, 0, 0, w, h);
+
+                const u = Math.max(1, Math.min(w, h) / 480);
+                const rawVal = openingInput.value.trim();
+                const isManualRevised = Boolean(measurement && rawVal !== '' && rawVal !== String(measurement.estimatedMm));
+                const displayVal = rawVal !== '' ? rawVal : (measurement ? String(measurement.estimatedMm) : '');
+
+                if (measurement) {
+                    const topY = measurement.topNorm * h;
+                    const bottomY = measurement.bottomNorm * h;
+                    const spanY = Math.max(2 * u, bottomY - topY);
+                    const cx = clamp(measurement.xCenter, 0.2, 0.8) * w;
+                    const halfW = clamp((measurement.mouthHalfW || 0.14) * w, w * 0.09, w * 0.26);
+                    const leftX = clamp(cx - halfW, 14 * u, w - 40 * u);
+                    const rightX = clamp(cx + halfW, leftX + 36 * u, w - 68 * u);
+                    const caliperX = clamp(rightX + 14 * u, rightX + 8 * u, w - 54 * u);
+
+                    // Subtle clinical measurement band across mouth opening
+                    ctx.fillStyle = 'rgba(13, 110, 110, 0.16)';
+                    ctx.fillRect(leftX, topY, rightX - leftX, spanY);
+
+                    // Upper & lower incisal boundary lines (double-stroked for contrast on any skin/tooth tone)
+                    [topY, bottomY].forEach(function (lineY) {
+                        ctx.beginPath();
+                        ctx.moveTo(leftX, lineY);
+                        ctx.lineTo(caliperX + 6 * u, lineY);
+                        ctx.lineWidth = 4 * u;
+                        ctx.strokeStyle = 'rgba(7, 41, 42, 0.78)';
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.moveTo(leftX, lineY);
+                        ctx.lineTo(caliperX + 6 * u, lineY);
+                        ctx.lineWidth = 2 * u;
+                        ctx.strokeStyle = '#FFFFFF';
+                        ctx.stroke();
+                    });
+
+                    // Vertical caliper bar beside mouth (keeps teeth unobstructed)
+                    ctx.beginPath();
+                    ctx.moveTo(caliperX, topY);
+                    ctx.lineTo(caliperX, bottomY);
+                    ctx.lineWidth = 4 * u;
+                    ctx.strokeStyle = 'rgba(7, 41, 42, 0.78)';
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(caliperX, topY);
+                    ctx.lineTo(caliperX, bottomY);
+                    ctx.lineWidth = 2 * u;
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.stroke();
+
+                    // Small ticks at top and bottom of caliper
+                    const tick = 5 * u;
+                    [topY, bottomY].forEach(function (ty) {
+                        ctx.beginPath();
+                        ctx.moveTo(caliperX - tick, ty);
+                        ctx.lineTo(caliperX + tick, ty);
+                        ctx.lineWidth = 2.5 * u;
+                        ctx.strokeStyle = '#FFFFFF';
+                        ctx.stroke();
+                    });
+
+                    // Pill badge next to caliper
+                    const pillLabel = (isManualRevised ? '' : '~') + displayVal + ' mm';
+                    ctx.font = '600 ' + Math.round(14 * u) + 'px "Instrument Sans", system-ui, -apple-system, sans-serif';
+                    const textW = ctx.measureText(pillLabel).width;
+                    const pillPadX = 10 * u;
+                    const pillW = textW + pillPadX * 2;
+                    const pillH = 26 * u;
+                    const preferRightX = caliperX + 10 * u;
+                    const pillX = (preferRightX + pillW <= w - 8 * u)
+                        ? preferRightX
+                        : Math.max(8 * u, leftX - pillW - 10 * u);
+                    const pillY = clamp(topY + spanY / 2 - pillH / 2, 8 * u, h - pillH - 54 * u);
+
+                    drawRoundedRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
+                    ctx.fillStyle = 'rgba(11, 59, 60, 0.94)';
+                    ctx.fill();
+                    ctx.lineWidth = 1.5 * u;
+                    ctx.strokeStyle = '#FFFFFF';
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(pillLabel, pillX + pillW / 2, pillY + pillH / 2 + 0.5 * u);
+                }
+
+                // Bottom-left clinical measurement stamp (always shown on saved photo)
+                if (displayVal !== '') {
+                    const mainStamp = 'Bukaan mulut: ' + (measurement && !isManualRevised ? '~' : '') + displayVal + ' mm';
+                    const subStamp = measurement
+                        ? (isManualRevised ? 'Estimasi foto · direvisi manual' : 'Estimasi kamera · kalibrasi iris')
+                        : 'Pengukuran mandiri E2';
+
+                    const mainFont = '600 ' + Math.round(13 * u) + 'px "Instrument Sans", system-ui, -apple-system, sans-serif';
+                    const subFont = '500 ' + Math.round(11 * u) + 'px "Instrument Sans", system-ui, -apple-system, sans-serif';
+
+                    ctx.font = mainFont;
+                    const w1 = ctx.measureText(mainStamp).width;
+                    ctx.font = subFont;
+                    const w2 = ctx.measureText(subStamp).width;
+
+                    const padX = 12 * u;
+                    const padY = 8 * u;
+                    const boxW = Math.min(w - 20 * u, Math.max(w1, w2) + padX * 2);
+                    const boxH = 38 * u;
+                    const boxX = 10 * u;
+                    const boxY = h - boxH - 10 * u;
+
+                    drawRoundedRect(ctx, boxX, boxY, boxW, boxH, 9 * u);
+                    ctx.fillStyle = 'rgba(11, 59, 60, 0.88)';
+                    ctx.fill();
+                    ctx.lineWidth = 1 * u;
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+                    ctx.stroke();
+
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    ctx.font = mainFont;
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillText(mainStamp, boxX + padX, boxY + padY - 1 * u);
+
+                    ctx.font = subFont;
+                    ctx.fillStyle = '#CFE6E6';
+                    ctx.fillText(subStamp, boxX + padX, boxY + padY + 15 * u);
+                }
+
+                return canvas.toDataURL('image/jpeg', 0.9);
+            }
+
             // Final submit validation
             form.addEventListener('submit', function (event) {
                 if (isSubmitting) {
@@ -2664,6 +2831,21 @@
                     showStep(4, false);
                     openingInput.focus();
                     return;
+                }
+
+                // Bake measurement caliper + clinical stamp onto the submitted photo copy
+                const hasAnyPhoto = Boolean(hiddenPhotoInput.value || (filePhotoInput.files && filePhotoInput.files.length > 0));
+                if (hasAnyPhoto && !photoAlreadyAnnotated) {
+                    try {
+                        const annotated = renderAnnotatedPhotoDataUrl();
+                        if (annotated) {
+                            hiddenPhotoInput.value = annotated;
+                            filePhotoInput.value = '';
+                            photoAlreadyAnnotated = true;
+                        }
+                    } catch (e) {
+                        // Fall back to submitting the original photo unchanged
+                    }
                 }
 
                 isSubmitting = true;
