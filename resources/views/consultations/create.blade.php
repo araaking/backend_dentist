@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#FFFFFF">
     <title>Self-Diagnosis TMD — Klinik Dentist</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -98,8 +99,19 @@
             font-family: var(--font-sans);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
             text-size-adjust: 100%;
+            -webkit-text-size-adjust: 100%;
             scroll-padding-block-start: 5.5rem;
+        }
+
+        button, a {
+            touch-action: manipulation;
+        }
+
+        button {
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         body {
@@ -139,6 +151,7 @@
             position: sticky;
             top: 0;
             z-index: 40;
+            padding-top: env(safe-area-inset-top, 0px);
             background-color: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--color-border-divider);
@@ -822,7 +835,7 @@
 
         .photo-box-header {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             align-items: center;
             justify-content: space-between;
             gap: 0.5rem;
@@ -833,6 +846,7 @@
             font-size: 0.9375rem;
             font-weight: 600;
             color: var(--color-text-primary);
+            min-width: 0;
         }
 
         .optional-pill {
@@ -844,6 +858,7 @@
             color: var(--color-accent-soft-ink);
             font-size: 0.75rem;
             font-weight: 600;
+            flex-shrink: 0;
         }
 
         .photo-viewport {
@@ -851,7 +866,7 @@
             width: 100%;
             max-width: 24rem;
             margin-inline: auto;
-            border-radius: 0.625rem;
+            border-radius: 0.75rem;
             overflow: hidden;
             background-color: #0F172A;
             display: none;
@@ -861,10 +876,24 @@
             display: block;
         }
 
+        /* Explicit aspect ratio so iOS Safari fills 100% edge-to-edge without black letterbox bars */
+        .photo-viewport--camera {
+            aspect-ratio: 3 / 4;
+            max-width: 100%;
+        }
+
+        @media (min-width: 640px) {
+            .photo-viewport--camera {
+                aspect-ratio: 4 / 3;
+                max-width: 26rem;
+            }
+        }
+
         .photo-video {
+            position: absolute;
+            inset: 0;
             width: 100%;
-            height: auto;
-            max-height: 22rem;
+            height: 100%;
             object-fit: cover;
             display: block;
         }
@@ -874,33 +903,35 @@
             position: absolute;
             inset: 0;
             pointer-events: none;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: 1fr auto;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.875rem;
+            justify-items: center;
+            padding: 1rem 0.875rem 0.875rem;
+            gap: 0.75rem;
         }
 
         .camera-guide-oval {
-            width: 58%;
-            max-width: 12.5rem;
-            aspect-ratio: 3 / 4;
-            margin: auto;
-            border: 2px dashed rgba(255, 255, 255, 0.78);
+            width: 60%;
+            height: 76%;
+            max-width: 13.5rem;
+            border: 2px dashed rgba(255, 255, 255, 0.82);
             border-radius: 9999px;
-            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.28);
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.3);
         }
 
         .camera-guide-tip {
             position: relative;
             z-index: 1;
-            padding: 0.25rem 0.625rem;
+            padding: 0.3125rem 0.75rem;
             border-radius: var(--radius-pill);
-            background-color: rgba(15, 23, 42, 0.78);
+            background-color: rgba(15, 23, 42, 0.8);
             color: #FFFFFF;
             font-size: 0.75rem;
             font-weight: 500;
+            line-height: 1.35;
             text-align: center;
+            max-width: 92%;
         }
 
         /* Interactive measurement stage (1:1 aspect ratio, zero cropping) */
@@ -1160,11 +1191,26 @@
             gap: 0.625rem;
         }
 
+        .photo-actions-secondary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .photo-actions-secondary #clear-photo {
+            grid-column: 1 / -1;
+        }
+
         @media (min-width: 520px) {
             .photo-actions {
                 flex-direction: row;
                 flex-wrap: wrap;
                 align-items: center;
+            }
+            .photo-actions-secondary {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.625rem;
             }
         }
 
@@ -1391,7 +1437,7 @@
             max-width: 52rem;
             width: 100%;
             margin-inline: auto;
-            padding-block: 0 1.75rem;
+            padding-block: 0 calc(2.5rem + env(safe-area-inset-bottom, 0px));
             padding-inline: 1rem;
         }
 
@@ -1712,11 +1758,11 @@
                 <div class="question-stack">
                     <div class="photo-box">
                         <div class="photo-box-header">
-                            <p class="photo-box-title">Foto mulut terbuka &amp; estimasi otomatis</p>
+                            <p class="photo-box-title">Foto &amp; estimasi bukaan mulut</p>
                             <span class="optional-pill">Opsional</span>
                         </div>
 
-                        <div id="video-wrap" class="photo-viewport">
+                        <div id="video-wrap" class="photo-viewport photo-viewport--camera">
                             <video id="video" class="photo-video" playsinline muted autoplay></video>
                             <div class="camera-guide" aria-hidden="true">
                                 <div class="camera-guide-oval"></div>
@@ -1802,14 +1848,6 @@
                         >
 
                         <div class="photo-actions">
-                            <button id="start-camera" type="button" class="btn-secondary btn-sm">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                    <circle cx="12" cy="13" r="4"/>
-                                </svg>
-                                <span id="start-camera-label">Buka kamera</span>
-                            </button>
-
                             <button id="snap" type="button" class="btn-primary btn-sm" hidden>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <circle cx="12" cy="12" r="9"/>
@@ -1817,18 +1855,28 @@
                                 <span>Ambil foto &amp; ukur</span>
                             </button>
 
-                            <button id="upload-photo-btn" type="button" class="btn-secondary btn-sm">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17 8 12 3 7 8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <span>Unggah dari perangkat</span>
-                            </button>
+                            <div class="photo-actions-secondary">
+                                <button id="start-camera" type="button" class="btn-secondary btn-sm">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
+                                    </svg>
+                                    <span id="start-camera-label">Buka kamera</span>
+                                </button>
 
-                            <button id="clear-photo" type="button" class="btn-secondary btn-sm" hidden>
-                                <span>Hapus foto</span>
-                            </button>
+                                <button id="upload-photo-btn" type="button" class="btn-secondary btn-sm">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                    <span>Unggah foto</span>
+                                </button>
+
+                                <button id="clear-photo" type="button" class="btn-secondary btn-sm" hidden>
+                                    <span>Hapus foto</span>
+                                </button>
+                            </div>
                         </div>
 
                         <p id="photo-status" class="photo-status" role="status">
@@ -2559,31 +2607,56 @@
                     loadFaceLandmarker().catch(function () {});
 
                     stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'user' },
+                        video: {
+                            facingMode: 'user',
+                            width: { ideal: 1080 },
+                            height: { ideal: 1440 }
+                        },
                         audio: false
                     });
                     video.srcObject = stream;
                     videoWrap.classList.add('is-visible');
                     photoPreviewContainer.classList.remove('is-visible');
                     snapBtn.hidden = false;
-                    startCameraLabel.textContent = 'Mulai ulang kamera';
+                    startCameraLabel.textContent = 'Ulang kamera';
                     setPhotoStatus('Posisikan wajah menghadap lurus ke kamera, buka mulut maksimal, lalu tekan Ambil foto & ukur.', false);
                     await video.play();
                 } catch (err) {
-                    setPhotoError('Kamera tidak dapat diakses. Berikan izin kamera di browser atau gunakan tombol Unggah dari perangkat.');
+                    setPhotoError('Kamera tidak dapat diakses. Berikan izin kamera di browser atau gunakan tombol Unggah foto.');
                 }
             });
 
             snapBtn.addEventListener('click', function () {
                 const vw = video.videoWidth || 640;
                 const vh = video.videoHeight || 480;
-                const maxWidth = 960;
-                const scale = vw > maxWidth ? (maxWidth / vw) : 1;
-                canvas.width = Math.round(vw * scale);
-                canvas.height = Math.round(vh * scale);
+
+                // Match the visible object-fit: cover crop of #video-wrap so the capture is WYSIWYG
+                const wrapRect = videoWrap.getBoundingClientRect();
+                const targetRatio = (wrapRect.width > 0 && wrapRect.height > 0)
+                    ? (wrapRect.width / wrapRect.height)
+                    : (vw / vh);
+                const videoRatio = vw / vh;
+
+                let srcX = 0;
+                let srcY = 0;
+                let srcW = vw;
+                let srcH = vh;
+
+                if (videoRatio > targetRatio) {
+                    srcW = vh * targetRatio;
+                    srcX = (vw - srcW) / 2;
+                } else if (videoRatio < targetRatio) {
+                    srcH = vw / targetRatio;
+                    srcY = (vh - srcH) / 2;
+                }
+
+                const maxDim = 960;
+                const scale = Math.max(srcW, srcH) > maxDim ? (maxDim / Math.max(srcW, srcH)) : 1;
+                canvas.width = Math.round(srcW * scale);
+                canvas.height = Math.round(srcH * scale);
 
                 const ctx = canvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
 
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
                 hiddenPhotoInput.value = dataUrl;
