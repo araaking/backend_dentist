@@ -3,332 +3,342 @@
 @section('title', 'Admin Dashboard')
 
 @section('content')
-<div class="space-y-6">
-    <!-- Header -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex justify-between items-center">
+    <header class="page-header">
+        <div>
+            <h1 class="page-title">Admin Dashboard</h1>
+            <p class="page-subtitle">Ringkasan statistik pasien, konsultasi, jawaban kuesioner, dan temuan diagnosis klinik.</p>
+        </div>
+
+        <a href="#all-patients" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span>Lihat semua pasien</span>
+        </a>
+    </header>
+
+    {{-- KPI Ringkasan --}}
+    <section class="kpi-grid" aria-label="Ringkasan metrik klinik">
+        <article class="card kpi-card">
+            <span class="kpi-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </span>
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">
-                    <i class="fas fa-tachometer-alt mr-2 text-blue-600"></i>
-                    Admin Dashboard
-                </h1>
-                <p class="text-gray-600 mt-2">Statistik keseluruhan data klinik dentist</p>
+                <p class="kpi-label">Total pasien</p>
+                <p class="kpi-value">{{ $totalPatients }}</p>
             </div>
-            <a href="#all-patients" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition">
-                <i class="fas fa-users mr-2"></i>Lihat Semua Pasien
-            </a>
-        </div>
-    </div>
+        </article>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Total Patients Card -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 bg-blue-100 rounded-full">
-                    <i class="fas fa-users text-blue-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-600">Total Pasien</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $totalPatients }}</p>
-                </div>
+        <article class="card kpi-card">
+            <span class="kpi-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/>
+                    <line x1="20" y1="8" x2="20" y2="14"/>
+                    <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+            </span>
+            <div>
+                <p class="kpi-label">Pasien baru bulan ini</p>
+                <p class="kpi-value">{{ $newPatientsThisMonth }}</p>
             </div>
-        </div>
+        </article>
 
-        <!-- New Patients This Month Card -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 bg-green-100 rounded-full">
-                    <i class="fas fa-user-plus text-green-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-600">Pasien Baru Bulan Ini</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $newPatientsThisMonth }}</p>
-                </div>
+        <article class="card kpi-card">
+            <span class="kpi-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </span>
+            <div>
+                <p class="kpi-label">Total konsultasi</p>
+                <p class="kpi-value">{{ $totalConsultations }}</p>
             </div>
-        </div>
+        </article>
 
-        <!-- Total Consultations Card -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 bg-purple-100 rounded-full">
-                    <i class="fas fa-comments text-purple-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-600">Total Konsultasi</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $totalConsultations }}</p>
-                </div>
+        <article class="card kpi-card">
+            <span class="kpi-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+            </span>
+            <div>
+                <p class="kpi-label">Total diagnosis</p>
+                <p class="kpi-value">{{ $totalDiagnoses }}</p>
             </div>
-        </div>
+        </article>
+    </section>
 
-        <!-- Total Diagnoses Card -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="p-3 bg-red-100 rounded-full">
-                    <i class="fas fa-stethoscope text-red-600 text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm text-gray-600">Total Diagnosis</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $totalDiagnoses }}</p>
+    {{-- Statistik & Tabel Ringkas --}}
+    <div class="grid-2">
+        <section class="card card--flush" aria-labelledby="latest-patients-heading">
+            <div class="card-header-bar">
+                <div>
+                    <h2 id="latest-patients-heading" class="section-title">10 pasien terbaru</h2>
+                    <p class="section-subtitle">Pendaftaran pasien paling baru di klinik.</p>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Detailed Statistics Tables -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Latest Patients Table -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-users mr-2 text-blue-600"></i>
-                    10 Pasien Terbaru
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Tanggal daftar</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($latestPatients as $patient)
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                <td class="td-nowrap">{{ $patient->name }}</td>
+                                <td class="td-nowrap td-muted td-num">{{ $patient->created_at->format('d/m/Y') }}</td>
+                                <td class="td-nowrap">
+                                    <a
+                                        href="{{ route('admin.patients.show', $patient->id) }}"
+                                        class="table-link"
+                                        aria-label="Lihat detail pasien {{ $patient->name }}"
+                                    >Lihat detail</a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($latestPatients as $patient)
-                                <tr>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ $patient->created_at->format('d/m/Y') }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-eye"></i> Lihat Detail
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data pasien</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="empty-cell">Belum ada data pasien.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card card--flush" aria-labelledby="top-diagnoses-heading">
+            <div class="card-header-bar">
+                <div>
+                    <h2 id="top-diagnoses-heading" class="section-title">5 diagnosis terbanyak</h2>
+                    <p class="section-subtitle">Proporsi temuan diagnosis dari seluruh konsultasi.</p>
                 </div>
             </div>
-        </div>
-
-        <!-- Top Diagnoses Table -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-stethoscope mr-2 text-red-600"></i>
-                    5 Diagnosis Terbanyak
-                </h2>
-            </div>
-            <div class="p-6">
-                @forelse ($diagnosisPercentages as $diagnosis)
-                    <div class="mb-4">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-medium text-gray-700">{{ $diagnosis['name'] }}</span>
-                            <span class="text-sm text-gray-500">{{ $diagnosis['count'] }} ({{ $diagnosis['percentage'] }}%)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $diagnosis['percentage'] }}%"></div>
-                        </div>
+            <div class="card-body">
+                @if (count($diagnosisPercentages) > 0)
+                    <div class="bar-list">
+                        @foreach ($diagnosisPercentages as $diagnosis)
+                            <div>
+                                <div class="bar-meta">
+                                    <span class="bar-label">{{ $diagnosis['name'] }}</span>
+                                    <span class="bar-count">{{ $diagnosis['count'] }} ({{ $diagnosis['percentage'] }}%)</span>
+                                </div>
+                                <div class="bar-track" aria-hidden="true">
+                                    <div class="bar-fill" style="width: {{ min(100, max(0, (float) $diagnosis['percentage'])) }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
-                @empty
-                    <p class="text-center text-sm text-gray-500">Belum ada data diagnosis</p>
-                @endforelse
-            </div>
-        </div>
-
-        <!-- Most Active Patients Table -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-star mr-2 text-yellow-500"></i>
-                    5 Pasien Teraktif
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pasien</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Konsultasi</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($mostActivePatients as $patient)
-                                <tr>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{{ $patient->name }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ $patient->consultation_count }}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900">
-                                            <i class="fas fa-eye"></i> Lihat Detail
-                                        </a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="3" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data konsultasi</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Most Answered Questions Table -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-800">
-                    <i class="fas fa-question-circle mr-2 text-purple-600"></i>
-                    10 Pertanyaan Terpopuler
-                </h2>
-            </div>
-            <div class="p-6">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pertanyaan</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Jawaban</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($mostAnsweredQuestions as $question)
-                                <tr>
-                                    <td class="px-4 py-3 text-sm text-gray-900">
-                                        <span class="font-medium">[{{ $question->code }}]</span> 
-                                        {{ Str::limit($question->question_text, 80) }}
-                                    </td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ $question->answer_count }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="px-4 py-3 text-center text-sm text-gray-500">Belum ada data jawaban</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- All Patients Table -->
-    <div id="all-patients" class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h2 class="text-lg font-semibold text-gray-800">
-                <i class="fas fa-users mr-2 text-blue-600"></i>
-                Daftar Semua Pasien
-            </h2>
-            <div class="flex items-center space-x-2">
-                <form method="GET" action="{{ route('admin.dashboard') }}#all-patients" class="relative">
-                    <input type="text" name="search" value="{{ $search ?? '' }}" maxlength="100" placeholder="Cari nama, telepon, atau email..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-search text-gray-400"></i>
-                    </div>
-                </form>
-                @if(!empty($search))
-                    <a href="{{ route('admin.dashboard') }}#all-patients" class="text-sm text-blue-600 hover:text-blue-800">Reset</a>
+                @else
+                    <p class="empty-cell" style="padding: 0.75rem 0;">Belum ada data diagnosis.</p>
                 @endif
             </div>
+        </section>
+
+        <section class="card card--flush" aria-labelledby="active-patients-heading">
+            <div class="card-header-bar">
+                <div>
+                    <h2 id="active-patients-heading" class="section-title">5 pasien teraktif</h2>
+                    <p class="section-subtitle">Pasien dengan frekuensi konsultasi terbanyak.</p>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nama pasien</th>
+                            <th>Konsultasi</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($mostActivePatients as $patient)
+                            <tr>
+                                <td class="td-nowrap">{{ $patient->name }}</td>
+                                <td class="td-nowrap td-num">
+                                    <span class="pill pill--teal">{{ $patient->consultation_count }}</span>
+                                </td>
+                                <td class="td-nowrap">
+                                    <a
+                                        href="{{ route('admin.patients.show', $patient->id) }}"
+                                        class="table-link"
+                                        aria-label="Lihat detail pasien {{ $patient->name }}"
+                                    >Lihat detail</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="empty-cell">Belum ada data konsultasi.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card card--flush" aria-labelledby="popular-questions-heading">
+            <div class="card-header-bar">
+                <div>
+                    <h2 id="popular-questions-heading" class="section-title">10 pertanyaan terpopuler</h2>
+                    <p class="section-subtitle">Pertanyaan yang paling banyak tercatat pada jawaban pasien.</p>
+                </div>
+            </div>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Pertanyaan</th>
+                            <th>Jawaban</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($mostAnsweredQuestions as $question)
+                            <tr>
+                                <td>
+                                    <span class="pill pill--neutral" style="margin-inline-end: 0.375rem;">{{ $question->code }}</span>
+                                    <span>{{ Str::limit($question->question_text, 80) }}</span>
+                                </td>
+                                <td class="td-nowrap td-muted td-num">{{ $question->answer_count }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="2" class="empty-cell">Belum ada data jawaban.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    {{-- Daftar Semua Pasien (Search + Pagination) --}}
+    <section id="all-patients" class="card card--flush" aria-labelledby="all-patients-heading">
+        <div class="card-header-bar">
+            <div>
+                <h2 id="all-patients-heading" class="section-title">Daftar semua pasien</h2>
+                <p class="section-subtitle">Cari berdasarkan nama, nomor telepon, atau email pasien.</p>
+            </div>
+
+            <form method="GET" action="{{ route('admin.dashboard') }}#all-patients" class="search-bar">
+                <div class="search-input-wrap">
+                    <label for="dashboard-search" class="sr-only">Cari nama, telepon, atau email pasien</label>
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    <input
+                        type="search"
+                        id="dashboard-search"
+                        name="search"
+                        value="{{ $search ?? '' }}"
+                        maxlength="100"
+                        placeholder="Cari nama, telepon, atau email…"
+                        class="search-input"
+                    >
+                </div>
+                <button type="submit" class="btn-secondary">Cari</button>
+                @if (!empty($search))
+                    <a href="{{ route('admin.dashboard') }}#all-patients" class="btn-secondary">Reset</a>
+                @endif
+            </form>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pasien</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Pasien</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Telepon</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Konsultasi</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th>Nama pasien</th>
+                        <th>ID pasien</th>
+                        <th>Tanggal daftar</th>
+                        <th>Email</th>
+                        <th>No. telepon</th>
+                        <th>Konsultasi</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody>
                     @forelse ($allPatients as $patient)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900">
+                            <td class="td-nowrap">
+                                <a href="{{ route('admin.patients.show', $patient->id) }}" class="table-link">
                                     {{ $patient->name }}
                                 </a>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $patient->patient_id }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->created_at->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ $patient->user ? $patient->user->email : '-' }}
+                            <td class="td-nowrap td-num">{{ $patient->patient_id ?: '-' }}</td>
+                            <td class="td-nowrap td-muted td-num">{{ $patient->created_at->format('d/m/Y') }}</td>
+                            <td class="td-nowrap td-muted">{{ $patient->user ? $patient->user->email : '-' }}</td>
+                            <td class="td-nowrap td-muted td-num">{{ $patient->phone_number ?: '-' }}</td>
+                            <td class="td-nowrap">
+                                <span class="pill pill--teal">{{ $patient->consultations_count }}</span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $patient->phone_number }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ $patient->consultations_count }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <a href="{{ route('admin.patients.show', $patient->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">
-                                    <i class="fas fa-eye"></i> Lihat Detail
-                                </a>
+                            <td class="td-nowrap">
+                                <a
+                                    href="{{ route('admin.patients.show', $patient->id) }}"
+                                    class="table-link"
+                                    aria-label="Lihat detail pasien {{ $patient->name }}"
+                                >Lihat detail</a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
-                                {{ !empty($search) ? 'Tidak ada pasien yang cocok dengan pencarian.' : 'Belum ada data pasien' }}
+                            <td colspan="7" class="empty-cell">
+                                {{ !empty($search) ? 'Tidak ada pasien yang cocok dengan pencarian "' . $search . '".' : 'Belum ada data pasien.' }}
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        
-        <!-- Pagination -->
-        @if($allPatients->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200">
+
+        @if ($allPatients->hasPages())
+            <div class="pagination-wrap">
                 {{ $allPatients->links() }}
             </div>
         @endif
-    </div>
+    </section>
 
-    <!-- Additional Statistics -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Average Consultations -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                <i class="fas fa-chart-line mr-2 text-green-600"></i>
-                Statistik Konsultasi
-            </h2>
-            <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-sm text-gray-600">Rata-rata Konsultasi per Pasien:</span>
-                    <span class="text-lg font-bold text-gray-800">{{ round((float) $avgConsultationsPerPatient, 2) }}</span>
+    {{-- Statistik Tambahan --}}
+    <div class="grid-2">
+        <section class="card" aria-labelledby="avg-consultations-heading">
+            <h2 id="avg-consultations-heading" class="section-title">Statistik konsultasi</h2>
+            <p class="section-subtitle" style="margin-bottom: 1rem;">Rata-rata aktivitas skrining per pasien.</p>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.875rem 1rem; border-radius: var(--radius-nested); background-color: var(--color-bg-subtle);">
+                <span style="font-size: 0.875rem; color: var(--color-text-secondary);">Rata-rata konsultasi per pasien</span>
+                <span style="font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-text-primary);">
+                    {{ round((float) $avgConsultationsPerPatient, 2) }}
+                </span>
+            </div>
+        </section>
+
+        <section class="card" aria-labelledby="answer-distribution-heading">
+            <h2 id="answer-distribution-heading" class="section-title">Distribusi jawaban per tipe</h2>
+            <p class="section-subtitle" style="margin-bottom: 1rem;">Perbandingan jawaban subjektif (SQ) dan objektif (EQ).</p>
+            @if ($answerDistributionByType->isNotEmpty())
+                <div style="display: grid; gap: 0.625rem;">
+                    @foreach ($answerDistributionByType as $distribution)
+                        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; border-radius: var(--radius-nested); background-color: var(--color-bg-subtle);">
+                            <span style="font-size: 0.875rem; font-weight: 500; color: var(--color-text-strong);">{{ $distribution->type }}</span>
+                            <span style="font-size: 1.125rem; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--color-text-primary);">{{ $distribution->answer_count }}</span>
+                        </div>
+                    @endforeach
                 </div>
-            </div>
-        </div>
-
-        <!-- Answer Distribution by Type -->
-        <div class="bg-white rounded-lg shadow p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-4">
-                <i class="fas fa-chart-pie mr-2 text-indigo-600"></i>
-                Distribusi Jawaban per Tipe
-            </h2>
-            <div class="space-y-3">
-                @forelse ($answerDistributionByType as $distribution)
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">{{ $distribution->type }}:</span>
-                        <span class="text-lg font-bold text-gray-800">{{ $distribution->answer_count }}</span>
-                    </div>
-                @empty
-                    <p class="text-center text-sm text-gray-500">Belum ada data distribusi jawaban</p>
-                @endforelse
-            </div>
-        </div>
+            @else
+                <p class="empty-cell" style="padding: 0.75rem 0;">Belum ada data distribusi jawaban.</p>
+            @endif
+        </section>
     </div>
-</div>
 @endsection
