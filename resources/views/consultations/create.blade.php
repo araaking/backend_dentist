@@ -808,7 +808,7 @@
         }
 
         /* =====================================================================
-           Camera & Upload Box (E2 Photo)
+           Camera, Upload & Interactive Opening Estimator (E2)
            ===================================================================== */
         .photo-box {
             padding: 1rem;
@@ -817,12 +817,39 @@
             border: 1px solid var(--color-border-divider);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.875rem;
+        }
+
+        .photo-box-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .photo-box-title {
+            margin: 0;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .optional-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.1875rem 0.5625rem;
+            border-radius: var(--radius-pill);
+            background-color: var(--color-accent-soft);
+            color: var(--color-accent-soft-ink);
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .photo-viewport {
+            position: relative;
             width: 100%;
-            max-width: 22rem;
+            max-width: 24rem;
             margin-inline: auto;
             border-radius: 0.625rem;
             overflow: hidden;
@@ -834,19 +861,297 @@
             display: block;
         }
 
-        .photo-video,
-        .photo-preview {
+        .photo-video {
             width: 100%;
             height: auto;
-            max-height: 18rem;
+            max-height: 22rem;
             object-fit: cover;
             display: block;
         }
 
+        /* Live camera face framing guide */
+        .camera-guide {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem;
+        }
+
+        .camera-guide-oval {
+            width: 58%;
+            max-width: 12.5rem;
+            aspect-ratio: 3 / 4;
+            margin: auto;
+            border: 2px dashed rgba(255, 255, 255, 0.78);
+            border-radius: 9999px;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.28);
+        }
+
+        .camera-guide-tip {
+            position: relative;
+            z-index: 1;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-pill);
+            background-color: rgba(15, 23, 42, 0.78);
+            color: #FFFFFF;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* Interactive measurement stage (1:1 aspect ratio, zero cropping) */
+        .measure-stage {
+            position: relative;
+            width: 100%;
+            line-height: 0;
+        }
+
         .photo-preview {
+            width: 100%;
+            height: auto;
+            display: block;
             border-radius: 0.625rem;
             outline: 1px solid rgba(0, 0, 0, 0.1);
             outline-offset: -1px;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .measure-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .measure-overlay[hidden] {
+            display: none;
+        }
+
+        .measure-band {
+            position: absolute;
+            inset-inline: 0;
+            top: 0;
+            height: 0;
+            background-color: rgba(13, 110, 110, 0.2);
+            pointer-events: none;
+        }
+
+        .measure-axis {
+            position: absolute;
+            top: 0;
+            width: 2px;
+            height: 0;
+            margin-inline-start: -1px;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.55);
+            pointer-events: none;
+        }
+
+        .measure-readout {
+            position: absolute;
+            top: 0;
+            transform: translate(-50%, -50%);
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-pill);
+            background-color: #0B3B3C;
+            color: #FFFFFF;
+            border: 1.5px solid #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            line-height: 1.25;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Draggable horizontal calipers (44px touch target, 1:1 pointer tracking) */
+        .measure-handle {
+            position: absolute;
+            inset-inline: 0;
+            top: 0;
+            height: 44px;
+            margin-top: -22px;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            cursor: ns-resize;
+            pointer-events: auto;
+            touch-action: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+        }
+
+        .measure-handle::before {
+            content: '';
+            position: absolute;
+            inset-inline: 0;
+            top: 50%;
+            height: 2px;
+            margin-top: -1px;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 1px rgba(11, 59, 60, 0.85);
+        }
+
+        .measure-handle:focus-visible {
+            outline: none;
+        }
+
+        .measure-handle:focus-visible .measure-pill {
+            outline: 2px solid #FFFFFF;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px var(--color-focus);
+        }
+
+        .measure-handle--top {
+            justify-content: flex-start;
+            padding-inline-start: 0.5rem;
+        }
+
+        .measure-handle--bottom {
+            justify-content: flex-end;
+            padding-inline-end: 0.5rem;
+        }
+
+        .measure-pill {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5625rem;
+            border-radius: var(--radius-pill);
+            background-color: #0D6E6E;
+            color: #FFFFFF;
+            border: 1.5px solid #FFFFFF;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+            font-family: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .measure-handle.is-dragging .measure-pill {
+            background-color: #07292A;
+        }
+
+        .measure-pill svg {
+            width: 0.875rem;
+            height: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        /* Estimation result bar inside photo box */
+        .estimate-panel {
+            padding: 0.75rem 0.875rem;
+            border-radius: 0.625rem;
+            background-color: var(--color-bg-surface);
+            border: 1px solid var(--color-border-divider);
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+        }
+
+        .estimate-panel[hidden] {
+            display: none;
+        }
+
+        .estimate-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .estimate-value-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .estimate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-pill);
+            background-color: var(--color-accent-soft);
+            color: var(--color-accent-soft-ink);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .estimate-help {
+            margin: 0;
+            font-size: 0.8125rem;
+            line-height: 1.45;
+            color: var(--color-text-secondary);
+            text-wrap: pretty;
+        }
+
+        .estimate-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .btn-xs {
+            min-height: 2.5rem;
+            padding-block: 0.375rem;
+            padding-inline: 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .opening-source-bar {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            background-color: var(--color-accent-soft);
+            color: var(--color-accent-soft-ink);
+            font-size: 0.8125rem;
+            line-height: 1.4;
+        }
+
+        .opening-source-bar[hidden] {
+            display: none;
+        }
+
+        .opening-source-btn {
+            border: 0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            background-color: var(--color-bg-surface);
+            color: var(--color-accent-soft-ink);
+            font-family: inherit;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 0.15em;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .opening-source-btn[hidden] {
+            display: none;
+        }
+
+        .opening-source-btn:focus-visible {
+            outline: 2px solid var(--color-focus);
+            outline-offset: 2px;
         }
 
         .photo-actions {
@@ -879,6 +1184,21 @@
             margin: 0;
             font-size: 0.8125rem;
             color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .inline-spinner {
+            width: 0.9375rem;
+            height: 0.9375rem;
+            flex-shrink: 0;
+            color: var(--color-accent);
+            animation: spin 750ms linear infinite;
+        }
+
+        .inline-spinner[hidden] {
+            display: none;
         }
 
         /* =====================================================================
@@ -1378,18 +1698,158 @@
             </section>
 
             {{-- ===============================================================
-                 Langkah 4: Pengukuran Bukaan Mulut & Foto (E2)
+                 Langkah 4: Pengukuran Bukaan Mulut & Estimasi Foto (E2)
                  =============================================================== --}}
             <section class="step-panel" data-step="4" aria-labelledby="step-title-4" hidden>
                 <header class="step-header">
                     <p class="step-kicker">Bagian 4 dari 5 · Pengukuran Bukaan Mulut</p>
                     <h2 id="step-title-4" class="step-title" tabindex="-1"><span class="q-code">E2</span>{{ $eq_titles['E2'] }}</h2>
-                    <p class="step-desc">Buka mulut Anda selebar mungkin tanpa memaksa nyeri, lalu ukur jarak antara ujung gigi seri atas dan bawah dalam milimeter.</p>
+                    <p class="step-desc">
+                        Buka mulut Anda selebar mungkin tanpa memaksa nyeri. Anda bisa memotret wajah untuk mendapatkan estimasi otomatis (mm) yang dapat disesuaikan, atau langsung mengisi hasil pengukuran penggaris di kolom bawah.
+                    </p>
                 </header>
 
                 <div class="question-stack">
+                    <div class="photo-box">
+                        <div class="photo-box-header">
+                            <p class="photo-box-title">Foto mulut terbuka &amp; estimasi otomatis</p>
+                            <span class="optional-pill">Opsional</span>
+                        </div>
+
+                        <div id="video-wrap" class="photo-viewport">
+                            <video id="video" class="photo-video" playsinline muted autoplay></video>
+                            <div class="camera-guide" aria-hidden="true">
+                                <div class="camera-guide-oval"></div>
+                                <span class="camera-guide-tip">Hadap lurus ke kamera, pastikan mata dan mulut terlihat jelas</span>
+                            </div>
+                        </div>
+
+                        <div id="photo-preview-container" class="photo-viewport">
+                            <div id="measure-stage" class="measure-stage">
+                                <img id="photo-preview" class="photo-preview" alt="Pratinjau foto mulut terbuka">
+                                <div id="measure-overlay" class="measure-overlay" hidden>
+                                    <div id="measure-band" class="measure-band"></div>
+                                    <div id="measure-axis" class="measure-axis"></div>
+                                    <div id="measure-readout" class="measure-readout" aria-hidden="true">~0 mm</div>
+
+                                    <button
+                                        type="button"
+                                        id="measure-handle-top"
+                                        class="measure-handle measure-handle--top"
+                                        role="slider"
+                                        aria-orientation="vertical"
+                                        aria-label="Geser garis batas ujung gigi seri atas"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                        aria-valuenow="0"
+                                    >
+                                        <span class="measure-pill">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <polyline points="8 6 12 2 16 6"/>
+                                                <polyline points="8 18 12 22 16 18"/>
+                                                <line x1="12" y1="2" x2="12" y2="22"/>
+                                            </svg>
+                                            <span>Gigi atas</span>
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        id="measure-handle-bottom"
+                                        class="measure-handle measure-handle--bottom"
+                                        role="slider"
+                                        aria-orientation="vertical"
+                                        aria-label="Geser garis batas ujung gigi seri bawah"
+                                        aria-valuemin="0"
+                                        aria-valuemax="100"
+                                        aria-valuenow="0"
+                                    >
+                                        <span class="measure-pill">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                                <polyline points="8 6 12 2 16 6"/>
+                                                <polyline points="8 18 12 22 16 18"/>
+                                                <line x1="12" y1="2" x2="12" y2="22"/>
+                                            </svg>
+                                            <span>Gigi bawah</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="estimate-panel" class="estimate-panel" hidden>
+                            <div class="estimate-row">
+                                <div class="estimate-value-wrap">
+                                    <span id="estimate-badge" class="estimate-badge">Estimasi foto: ~0 mm</span>
+                                </div>
+                                <div class="estimate-actions">
+                                    <button type="button" id="reset-calipers-btn" class="btn-secondary btn-xs">Reset garis</button>
+                                </div>
+                            </div>
+                            <p id="estimate-help" class="estimate-help">
+                                Geser garis <strong>Gigi atas</strong> dan <strong>Gigi bawah</strong> tepat ke ujung gigi seri atas dan bawah agar estimasi lebih mendekati ukuran asli. Anda tetap bisa merevisi angka di kolom bawah.
+                            </p>
+                        </div>
+
+                        <canvas id="canvas" class="file-input-hidden" aria-hidden="true"></canvas>
+                        <input type="hidden" name="e2_photo" id="e2_photo" value="{{ old('e2_photo') }}">
+                        <input
+                            type="file"
+                            name="e2_photo_file"
+                            id="e2_photo_file"
+                            accept="image/jpeg,image/png"
+                            hidden
+                        >
+
+                        <div class="photo-actions">
+                            <button id="start-camera" type="button" class="btn-secondary btn-sm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                                <span id="start-camera-label">Buka kamera</span>
+                            </button>
+
+                            <button id="snap" type="button" class="btn-primary btn-sm" hidden>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9"/>
+                                </svg>
+                                <span>Ambil foto &amp; ukur</span>
+                            </button>
+
+                            <button id="upload-photo-btn" type="button" class="btn-secondary btn-sm">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                                <span>Unggah dari perangkat</span>
+                            </button>
+
+                            <button id="clear-photo" type="button" class="btn-secondary btn-sm" hidden>
+                                <span>Hapus foto</span>
+                            </button>
+                        </div>
+
+                        <p id="photo-status" class="photo-status" role="status">
+                            <svg id="photo-spinner" class="inline-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true" hidden>
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                            </svg>
+                            <span id="photo-status-text">Ambil foto dengan kamera depan (atau unggah JPG/PNG maks 5 MB) untuk estimasi bukaan mulut otomatis. Foto disimpan secara privat.</span>
+                        </p>
+
+                        <p id="photo-error" class="field-error" @if (!$errors->has('e2_photo') && !$errors->has('e2_photo_file')) hidden @endif>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                            <span id="photo-error-text">{{ $errors->first('e2_photo') ?: $errors->first('e2_photo_file') }}</span>
+                        </p>
+                    </div>
+
                     <div>
-                        <label for="e2_opening" class="field-label">Jarak bukaan mulut maksimal</label>
+                        <label for="e2_opening" class="field-label">Jarak bukaan mulut maksimal (dapat direvisi manual)</label>
                         <div class="input-wrap">
                             <input
                                 type="number"
@@ -1407,7 +1867,15 @@
                             >
                             <span class="input-unit" aria-hidden="true">mm</span>
                         </div>
-                        <p id="e2-opening-hint" class="field-hint">Rentang nilai yang diterima: 0 hingga 100 mm (contoh: 40).</p>
+
+                        <div id="opening-source-bar" class="opening-source-bar" hidden>
+                            <span id="opening-source-text"></span>
+                            <button type="button" id="apply-estimate-btn" class="opening-source-btn" hidden>Gunakan estimasi foto</button>
+                        </div>
+
+                        <p id="e2-opening-hint" class="field-hint">
+                            Ukur jarak ujung gigi seri atas ke bawah dalam milimeter (0–100 mm). Estimasi kamera memiliki kisaran toleransi ±3–5 mm; gunakan penggaris bila tersedia untuk hasil paling presisi.
+                        </p>
                         <p id="e2-opening-error" class="field-error" @if (!$errors->has('eq.E2.opening_mm')) hidden @endif>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <circle cx="12" cy="12" r="10"/>
@@ -1416,72 +1884,6 @@
                             </svg>
                             <span id="e2-opening-error-text">{{ $errors->first('eq.E2.opening_mm') }}</span>
                         </p>
-                    </div>
-
-                    <div>
-                        <p class="field-label">Foto mulut terbuka (opsional, membantu evaluasi dokter)</p>
-                        <div class="photo-box">
-                            <div id="video-wrap" class="photo-viewport">
-                                <video id="video" class="photo-video" playsinline muted autoplay></video>
-                            </div>
-
-                            <div id="photo-preview-container" class="photo-viewport">
-                                <img id="photo-preview" class="photo-preview" alt="Pratinjau foto mulut terbuka">
-                            </div>
-
-                            <canvas id="canvas" class="file-input-hidden" aria-hidden="true"></canvas>
-                            <input type="hidden" name="e2_photo" id="e2_photo" value="{{ old('e2_photo') }}">
-                            <input
-                                type="file"
-                                name="e2_photo_file"
-                                id="e2_photo_file"
-                                accept="image/jpeg,image/png"
-                                hidden
-                            >
-
-                            <div class="photo-actions">
-                                <button id="start-camera" type="button" class="btn-secondary btn-sm">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                                        <circle cx="12" cy="13" r="4"/>
-                                    </svg>
-                                    <span id="start-camera-label">Buka kamera</span>
-                                </button>
-
-                                <button id="snap" type="button" class="btn-primary btn-sm" hidden>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <circle cx="12" cy="12" r="9"/>
-                                    </svg>
-                                    <span>Ambil foto</span>
-                                </button>
-
-                                <button id="upload-photo-btn" type="button" class="btn-secondary btn-sm">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                        <polyline points="17 8 12 3 7 8"/>
-                                        <line x1="12" y1="3" x2="12" y2="15"/>
-                                    </svg>
-                                    <span>Unggah dari perangkat</span>
-                                </button>
-
-                                <button id="clear-photo" type="button" class="btn-secondary btn-sm" hidden>
-                                    <span>Hapus foto</span>
-                                </button>
-                            </div>
-
-                            <p id="photo-status" class="photo-status" role="status">
-                                Gunakan kamera depan atau unggah foto JPG/PNG maksimal 5 MB. Foto disimpan secara privat.
-                            </p>
-
-                            <p id="photo-error" class="field-error" @if (!$errors->has('e2_photo') && !$errors->has('e2_photo_file')) hidden @endif>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <line x1="12" y1="8" x2="12" y2="12"/>
-                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
-                                </svg>
-                                <span id="photo-error-text">{{ $errors->first('e2_photo') ?: $errors->first('e2_photo_file') }}</span>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -1624,16 +2026,343 @@
             const video = document.getElementById('video');
             const canvas = document.getElementById('canvas');
             const photoPreviewContainer = document.getElementById('photo-preview-container');
+            const measureStage = document.getElementById('measure-stage');
             const photoPreview = document.getElementById('photo-preview');
+            const measureOverlay = document.getElementById('measure-overlay');
+            const measureBand = document.getElementById('measure-band');
+            const measureAxis = document.getElementById('measure-axis');
+            const measureReadout = document.getElementById('measure-readout');
+            const handleTop = document.getElementById('measure-handle-top');
+            const handleBottom = document.getElementById('measure-handle-bottom');
+            const estimatePanel = document.getElementById('estimate-panel');
+            const estimateBadge = document.getElementById('estimate-badge');
+            const estimateHelp = document.getElementById('estimate-help');
+            const resetCalipersBtn = document.getElementById('reset-calipers-btn');
+            const openingSourceBar = document.getElementById('opening-source-bar');
+            const openingSourceText = document.getElementById('opening-source-text');
+            const applyEstimateBtn = document.getElementById('apply-estimate-btn');
             const hiddenPhotoInput = document.getElementById('e2_photo');
             const filePhotoInput = document.getElementById('e2_photo_file');
-            const photoStatus = document.getElementById('photo-status');
+            const photoSpinner = document.getElementById('photo-spinner');
+            const photoStatusText = document.getElementById('photo-status-text');
             const photoErrorEl = document.getElementById('photo-error');
             const photoErrorText = document.getElementById('photo-error-text');
 
             const summaryOpening = document.getElementById('summary-opening');
             const summaryPhoto = document.getElementById('summary-photo');
             const summaryE3 = document.getElementById('summary-e3');
+
+            // =================================================================
+            // MediaPipe Face Landmarker (Iris Calibration: ~11.7 mm HVID)
+            // =================================================================
+            const AVG_IRIS_DIAMETER_MM = 11.7;
+            const MEDIAPIPE_BUNDLE_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+            const MEDIAPIPE_WASM_URL = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
+            const FACE_MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+
+            let faceLandmarkerPromise = null;
+            let estimateRunId = 0;
+            let measurement = null; // { mmPerPx, naturalHeight, xCenter, topNorm, bottomNorm, initTopNorm, initBottomNorm, estimatedMm, rollDeg }
+
+            function setPhotoStatus(text, loading) {
+                photoStatusText.textContent = text;
+                photoSpinner.hidden = !loading;
+            }
+
+            function clamp(val, min, max) {
+                return Math.min(max, Math.max(min, val));
+            }
+
+            function loadFaceLandmarker() {
+                if (faceLandmarkerPromise) return faceLandmarkerPromise;
+                faceLandmarkerPromise = (async function () {
+                    const visionPkg = await import(MEDIAPIPE_BUNDLE_URL);
+                    const fileset = await visionPkg.FilesetResolver.forVisionTasks(MEDIAPIPE_WASM_URL);
+                    try {
+                        return await visionPkg.FaceLandmarker.createFromOptions(fileset, {
+                            baseOptions: {
+                                modelAssetPath: FACE_MODEL_URL,
+                                delegate: 'GPU'
+                            },
+                            runningMode: 'IMAGE',
+                            numFaces: 1
+                        });
+                    } catch (gpuErr) {
+                        return await visionPkg.FaceLandmarker.createFromOptions(fileset, {
+                            baseOptions: {
+                                modelAssetPath: FACE_MODEL_URL,
+                                delegate: 'CPU'
+                            },
+                            runningMode: 'IMAGE',
+                            numFaces: 1
+                        });
+                    }
+                })().catch(function (err) {
+                    faceLandmarkerPromise = null;
+                    throw err;
+                });
+                return faceLandmarkerPromise;
+            }
+
+            function distPx(a, b, w, h) {
+                return Math.hypot((a.x - b.x) * w, (a.y - b.y) * h);
+            }
+
+            function clearMeasurement() {
+                estimateRunId++;
+                measurement = null;
+                measureOverlay.hidden = true;
+                estimatePanel.hidden = true;
+                openingSourceBar.hidden = true;
+                applyEstimateBtn.hidden = true;
+            }
+
+            function computeMeasurementMm() {
+                if (!measurement) return 0;
+                const pxDist = Math.abs(measurement.bottomNorm - measurement.topNorm) * measurement.naturalHeight;
+                return clamp(Math.round(pxDist * measurement.mmPerPx), 0, 100);
+            }
+
+            function updateSourceIndicator(isManualOverride) {
+                if (!measurement) {
+                    openingSourceBar.hidden = true;
+                    return;
+                }
+                openingSourceBar.hidden = false;
+                if (isManualOverride) {
+                    openingSourceText.textContent = 'Nilai direvisi manual (estimasi foto saat ini: ~' + measurement.estimatedMm + ' mm).';
+                    applyEstimateBtn.textContent = 'Pakai estimasi (~' + measurement.estimatedMm + ' mm)';
+                    applyEstimateBtn.hidden = false;
+                } else {
+                    openingSourceText.textContent = 'Terisi otomatis dari estimasi foto (~' + measurement.estimatedMm + ' mm). Anda tetap dapat mengetik angka manual.';
+                    applyEstimateBtn.hidden = true;
+                }
+            }
+
+            function renderCalipers(syncInput) {
+                if (!measurement) return;
+                const stageRect = measureStage.getBoundingClientRect();
+                const stageH = stageRect.height;
+                const stageW = stageRect.width;
+                if (!stageH || !stageW) return;
+
+                const topPx = measurement.topNorm * stageH;
+                const bottomPx = measurement.bottomNorm * stageH;
+                const spanPx = Math.max(0, bottomPx - topPx);
+                const axisX = clamp(measurement.xCenter, 0.2, 0.8) * stageW;
+
+                handleTop.style.transform = 'translateY(' + topPx + 'px)';
+                handleBottom.style.transform = 'translateY(' + bottomPx + 'px)';
+                handleTop.setAttribute('aria-valuenow', String(Math.round(measurement.topNorm * 100)));
+                handleBottom.setAttribute('aria-valuenow', String(Math.round(measurement.bottomNorm * 100)));
+
+                measureBand.style.transform = 'translateY(' + topPx + 'px)';
+                measureBand.style.height = spanPx + 'px';
+
+                measureAxis.style.left = axisX + 'px';
+                measureAxis.style.transform = 'translateY(' + topPx + 'px)';
+                measureAxis.style.height = spanPx + 'px';
+
+                const estMm = computeMeasurementMm();
+                measurement.estimatedMm = estMm;
+
+                const readoutText = '~' + estMm + ' mm';
+                measureReadout.textContent = readoutText;
+                measureReadout.style.left = axisX + 'px';
+                measureReadout.style.top = (topPx + spanPx / 2) + 'px';
+
+                estimateBadge.textContent = 'Estimasi foto: ' + readoutText;
+
+                if (syncInput) {
+                    openingInput.value = String(estMm);
+                    setOpeningError('');
+                    updateSourceIndicator(false);
+                } else {
+                    const currentVal = openingInput.value.trim();
+                    updateSourceIndicator(currentVal !== String(estMm));
+                }
+            }
+
+            function attachCaliperDrag(handleEl, which) {
+                let activePointerId = null;
+
+                handleEl.addEventListener('pointerdown', function (event) {
+                    if (!measurement) return;
+                    event.preventDefault();
+                    activePointerId = event.pointerId;
+                    handleEl.setPointerCapture(event.pointerId);
+                    handleEl.classList.add('is-dragging');
+                });
+
+                handleEl.addEventListener('pointermove', function (event) {
+                    if (activePointerId !== event.pointerId || !measurement) return;
+                    const rect = measureStage.getBoundingClientRect();
+                    if (!rect.height) return;
+                    const rawNorm = clamp((event.clientY - rect.top) / rect.height, 0.02, 0.98);
+                    const minGap = 0.004;
+                    if (which === 'top') {
+                        measurement.topNorm = Math.min(rawNorm, measurement.bottomNorm - minGap);
+                    } else {
+                        measurement.bottomNorm = Math.max(rawNorm, measurement.topNorm + minGap);
+                    }
+                    isDirty = true;
+                    renderCalipers(true);
+                });
+
+                function endDrag(event) {
+                    if (activePointerId !== event.pointerId) return;
+                    activePointerId = null;
+                    handleEl.classList.remove('is-dragging');
+                    try {
+                        handleEl.releasePointerCapture(event.pointerId);
+                    } catch (e) {
+                        // Ignore if capture already released
+                    }
+                }
+
+                handleEl.addEventListener('pointerup', endDrag);
+                handleEl.addEventListener('pointercancel', endDrag);
+
+                // Keyboard support (WCAG 2.5.7 & APG slider keys)
+                handleEl.addEventListener('keydown', function (event) {
+                    if (!measurement) return;
+                    const step = event.shiftKey ? 0.02 : 0.005;
+                    let delta = 0;
+                    if (event.key === 'ArrowUp') delta = -step;
+                    else if (event.key === 'ArrowDown') delta = step;
+                    else return;
+
+                    event.preventDefault();
+                    const minGap = 0.004;
+                    if (which === 'top') {
+                        measurement.topNorm = clamp(measurement.topNorm + delta, 0.02, measurement.bottomNorm - minGap);
+                    } else {
+                        measurement.bottomNorm = clamp(measurement.bottomNorm + delta, measurement.topNorm + minGap, 0.98);
+                    }
+                    isDirty = true;
+                    renderCalipers(true);
+                });
+            }
+
+            attachCaliperDrag(handleTop, 'top');
+            attachCaliperDrag(handleBottom, 'bottom');
+
+            window.addEventListener('resize', function () {
+                if (measurement && !measureOverlay.hidden) {
+                    renderCalipers(false);
+                }
+            });
+
+            resetCalipersBtn.addEventListener('click', function () {
+                if (!measurement) return;
+                measurement.topNorm = measurement.initTopNorm;
+                measurement.bottomNorm = measurement.initBottomNorm;
+                renderCalipers(true);
+            });
+
+            applyEstimateBtn.addEventListener('click', function () {
+                if (!measurement) return;
+                openingInput.value = String(measurement.estimatedMm);
+                setOpeningError('');
+                updateSourceIndicator(false);
+                openingInput.focus();
+            });
+
+            async function waitForImageReady(img) {
+                if (img.complete && img.naturalWidth > 0) return;
+                if (typeof img.decode === 'function') {
+                    try {
+                        await img.decode();
+                        if (img.naturalWidth > 0) return;
+                    } catch (e) {
+                        // Fallback to onload listener
+                    }
+                }
+                await new Promise(function (resolve, reject) {
+                    img.addEventListener('load', resolve, { once: true });
+                    img.addEventListener('error', reject, { once: true });
+                });
+            }
+
+            async function runOpeningEstimation(autoFillInput) {
+                const runId = ++estimateRunId;
+                measurement = null;
+                measureOverlay.hidden = true;
+                estimatePanel.hidden = true;
+                openingSourceBar.hidden = true;
+
+                setPhotoStatus('Memuat deteksi wajah dan menghitung estimasi bukaan mulut…', true);
+
+                try {
+                    await waitForImageReady(photoPreview);
+                    if (runId !== estimateRunId) return;
+
+                    const landmarker = await loadFaceLandmarker();
+                    if (runId !== estimateRunId) return;
+
+                    const result = landmarker.detect(photoPreview);
+                    if (runId !== estimateRunId) return;
+
+                    const lm = result && result.faceLandmarks && result.faceLandmarks[0];
+                    if (!lm || lm.length < 478) {
+                        setPhotoStatus('Foto siap dikirim. Wajah atau iris mata belum terdeteksi jelas, silakan isi ukuran mm secara manual di bawah.', false);
+                        return;
+                    }
+
+                    const w = photoPreview.naturalWidth;
+                    const h = photoPreview.naturalHeight;
+
+                    const leftH = distPx(lm[469], lm[471], w, h);
+                    const leftV = distPx(lm[470], lm[472], w, h);
+                    const rightH = distPx(lm[474], lm[476], w, h);
+                    const rightV = distPx(lm[475], lm[477], w, h);
+                    const irisPx = (leftH + leftV + rightH + rightV) / 4;
+
+                    if (!irisPx || irisPx < 4) {
+                        setPhotoStatus('Foto siap dikirim. Ukuran mata terlalu kecil untuk kalibrasi otomatis — isi ukuran mm secara manual di bawah.', false);
+                        return;
+                    }
+
+                    const mmPerPx = AVG_IRIS_DIAMETER_MM / irisPx;
+                    const eyeDx = Math.abs((lm[473].x - lm[468].x) * w);
+                    const eyeDy = Math.abs((lm[473].y - lm[468].y) * h);
+                    const rollDeg = Math.atan2(eyeDy, Math.max(1, eyeDx)) * (180 / Math.PI);
+
+                    const rawTop = clamp(Math.min(lm[13].y, lm[14].y), 0.05, 0.92);
+                    const rawBottom = clamp(Math.max(lm[13].y, lm[14].y), rawTop + 0.01, 0.96);
+                    const xCenter = clamp((lm[13].x + lm[14].x) / 2, 0.2, 0.8);
+
+                    measurement = {
+                        mmPerPx: mmPerPx,
+                        naturalHeight: h,
+                        xCenter: xCenter,
+                        topNorm: rawTop,
+                        bottomNorm: rawBottom,
+                        initTopNorm: rawTop,
+                        initBottomNorm: rawBottom,
+                        estimatedMm: 0,
+                        rollDeg: rollDeg
+                    };
+
+                    measureOverlay.hidden = false;
+                    estimatePanel.hidden = false;
+
+                    if (rollDeg > 15) {
+                        estimateHelp.innerHTML = 'Kepala terlihat agak miring; geser garis <strong>Gigi atas</strong> dan <strong>Gigi bawah</strong> ke ujung gigi seri atau revisi angka manual di kolom bawah untuk hasil lebih akurat.';
+                    } else {
+                        estimateHelp.innerHTML = 'Geser garis <strong>Gigi atas</strong> dan <strong>Gigi bawah</strong> tepat ke ujung gigi seri atas dan bawah agar estimasi lebih mendekati ukuran asli. Anda tetap bisa merevisi angka di kolom bawah.';
+                    }
+
+                    requestAnimationFrame(function () {
+                        if (runId !== estimateRunId) return;
+                        renderCalipers(autoFillInput);
+                        setPhotoStatus('Estimasi otomatis selesai (~' + measurement.estimatedMm + ' mm). Anda dapat menggeser garis ukur pada foto atau merevisi angkanya.', false);
+                    });
+                } catch (err) {
+                    if (runId !== estimateRunId) return;
+                    setPhotoStatus('Foto siap dikirim. Estimasi otomatis tidak tersedia (koneksi/browser), silakan isi jarak bukaan mulut secara manual di bawah.', false);
+                }
+            }
 
             function stopCameraStream() {
                 if (stream) {
@@ -1729,6 +2458,12 @@
                 nextBtn.hidden = currentStep === totalSteps;
                 submitBtn.hidden = currentStep !== totalSteps;
 
+                if (currentStep === 4 && measurement && !measureOverlay.hidden) {
+                    requestAnimationFrame(function () {
+                        renderCalipers(false);
+                    });
+                }
+
                 if (currentStep === totalSteps) {
                     updateSummary();
                 }
@@ -1748,7 +2483,8 @@
                 photoPreviewContainer.classList.add('is-visible');
                 clearPhotoBtn.hidden = false;
                 startCameraLabel.textContent = 'Ambil ulang';
-                photoStatus.textContent = 'Foto dari kamera siap dikirim.';
+                setPhotoStatus('Foto dari kamera siap dikirim.', false);
+                runOpeningEstimation(openingInput.value.trim() === '');
             }
 
             // Step pill navigation
@@ -1796,6 +2532,10 @@
                         setOpeningError('');
                     }
                 }
+                if (measurement) {
+                    const currentVal = openingInput.value.trim();
+                    updateSourceIndicator(currentVal !== String(measurement.estimatedMm));
+                }
             });
 
             // Camera handling
@@ -1808,6 +2548,10 @@
 
                 try {
                     stopCameraStream();
+                    clearMeasurement();
+                    // Pre-warm Face Landmarker model in background while user frames face
+                    loadFaceLandmarker().catch(function () {});
+
                     stream = await navigator.mediaDevices.getUserMedia({
                         video: { facingMode: 'user' },
                         audio: false
@@ -1817,7 +2561,7 @@
                     photoPreviewContainer.classList.remove('is-visible');
                     snapBtn.hidden = false;
                     startCameraLabel.textContent = 'Mulai ulang kamera';
-                    photoStatus.textContent = 'Posisikan wajah dan bukaan mulut di depan kamera, lalu tekan Ambil foto.';
+                    setPhotoStatus('Posisikan wajah menghadap lurus ke kamera, buka mulut maksimal, lalu tekan Ambil foto & ukur.', false);
                     await video.play();
                 } catch (err) {
                     setPhotoError('Kamera tidak dapat diakses. Berikan izin kamera di browser atau gunakan tombol Unggah dari perangkat.');
@@ -1847,10 +2591,10 @@
                 photoPreviewContainer.classList.add('is-visible');
                 clearPhotoBtn.hidden = false;
                 startCameraLabel.textContent = 'Ambil ulang';
-                photoStatus.textContent = 'Foto berhasil diambil dan siap dikirim.';
                 setPhotoError('');
                 isDirty = true;
                 stopCameraStream();
+                runOpeningEstimation(true);
             });
 
             uploadPhotoBtn.addEventListener('click', function () {
@@ -1876,6 +2620,7 @@
                 }
 
                 stopCameraStream();
+                clearMeasurement();
                 hiddenPhotoInput.value = '';
                 if (previewObjectUrl) {
                     URL.revokeObjectURL(previewObjectUrl);
@@ -1884,12 +2629,13 @@
                 photoPreview.src = previewObjectUrl;
                 photoPreviewContainer.classList.add('is-visible');
                 clearPhotoBtn.hidden = false;
-                photoStatus.textContent = 'Foto terpilih: ' + file.name + '.';
                 isDirty = true;
+                runOpeningEstimation(true);
             });
 
             clearPhotoBtn.addEventListener('click', function () {
                 stopCameraStream();
+                clearMeasurement();
                 hiddenPhotoInput.value = '';
                 filePhotoInput.value = '';
                 if (previewObjectUrl) {
@@ -1900,7 +2646,7 @@
                 photoPreviewContainer.classList.remove('is-visible');
                 clearPhotoBtn.hidden = true;
                 startCameraLabel.textContent = 'Buka kamera';
-                photoStatus.textContent = 'Gunakan kamera depan atau unggah foto JPG/PNG maksimal 5 MB. Foto disimpan secara privat.';
+                setPhotoStatus('Ambil foto dengan kamera depan (atau unggah JPG/PNG maks 5 MB) untuk estimasi bukaan mulut otomatis. Foto disimpan secara privat.', false);
                 setPhotoError('');
             });
 
